@@ -1,4 +1,5 @@
 import $ivy.`io.chris-kipp::mill-ci-release::0.1.3`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.6.1`
 
 import mill._
 import mill.scalalib._
@@ -6,11 +7,20 @@ import mill.scalalib.scalafmt._
 import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil.scalaNativeBinaryVersion
 import io.kipp.mill.ci.release.CiReleaseModule
+import de.tobiasroeser.mill.vcs.version.VcsVersion
+import de.tobiasroeser.mill.integrationtest._
 
 
 //noinspection ScalaWeakerAccess
 trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule {
   override def scalaVersion = "2.13.10"
+
+  override def publishVersion: T[String] = T {
+    VcsVersion.vcsState().format(
+      dirtyHashDigits = 0,
+      untaggedSuffix = "-SNAPSHOT"
+    )
+  }
 
   def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
 
@@ -44,6 +54,11 @@ object jsdeps extends CommonModule
 object millbundler extends CommonModule {
   override def moduleDeps = Seq(jsdeps)
   override def ivyDeps = Agg(
-    ivy"com.lihaoyi::geny:0.6.10"
+    ivy"com.lihaoyi::geny:1.0.0"
   )
+}
+
+object test extends MillIntegrationTestModule {
+  override def millTestVersion = "0.10.9" //TODO
+  override def pluginsUnderTest = Seq(millbundler)
 }

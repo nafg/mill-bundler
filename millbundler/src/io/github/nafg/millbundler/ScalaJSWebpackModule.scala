@@ -96,7 +96,8 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
       ).call(
         cwd = dir,
         stdout =
-          os.ProcessOutput.Readlines(line => logger.debug("[webpack] " + line))
+          os.ProcessOutput.Readlines(line => logger.debug("[webpack] " + line)),
+        env = Map("NODE_OPTIONS" -> "--openssl-legacy-provider")
       )
     catch {
       case e: os.SubprocessException =>
