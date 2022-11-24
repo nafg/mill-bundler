@@ -5,6 +5,8 @@ import io.github.nafg.millbundler.jsdeps.{JsDeps, ScalaJSNpmModule}
 import geny.Generator
 import mill._
 import mill.define.Target
+import mill.scalajslib.TestScalaJSModule
+import mill.scalajslib.api.{ModuleKind, Report}
 import os.Path
 
 //noinspection ScalaWeakerAccess
@@ -170,6 +172,28 @@ object ScalaJSWebpackModule {
     def prodWebpack: Target[Seq[PathRef]] = T {
       val entrypoint = writeEntrypoint().apply(fullOpt().path).path
       webpack().apply(WebpackParams(entrypoint, opt = true)) :+ fullOpt()
+    }
+  }
+
+  trait Test extends TestScalaJSModule with AsApplication {
+    override def fastLinkJSTest = T {
+      val report = super.fastLinkJSTest()
+      val dir = npmInstall().path
+      val webpackParams =
+        WebpackParams(
+          report.dest.path / report.publicModules.head.jsFileName,
+          opt = false
+        )
+      webpack().apply(webpackParams)
+      val modules =
+        Report.Module(
+          moduleID = "main",
+          jsFileName = bundleFilename(),
+          sourceMapName = Some(bundleFilename() + ".map"),
+          moduleKind = ModuleKind.NoModule
+        ) +:
+          report.publicModules.toSeq.drop(1)
+      Report(publicModules = modules, dest = PathRef(dir))
     }
   }
 }
