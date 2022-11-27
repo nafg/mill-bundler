@@ -27,7 +27,7 @@ jobs:
           apps: mill
 
       - name: Test
-        run: mill test
+        run: mill --no-server --jobs 0 test
 
   publish:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
           apps: mill
 
       - name: Publish
-        run: mill io.kipp.mill.ci.release.ReleaseModule/publishAll
+        run: mill --no-server --jobs 0 io.kipp.mill.ci.release.ReleaseModule/publishAll
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
