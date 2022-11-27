@@ -11,7 +11,12 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import de.tobiasroeser.mill.integrationtest._
 
 
-//noinspection ScalaWeakerAccess
+def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
+
+def millVersion = T {
+  os.read(millVersionFile().path).trim
+}
+
 trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule {
   override def scalaVersion = "2.13.10"
 
@@ -20,12 +25,6 @@ trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule 
       dirtyHashDigits = 0,
       untaggedSuffix = "-SNAPSHOT"
     )
-  }
-
-  def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
-
-  def millVersion = T {
-    os.read(millVersionFile().path).trim
   }
 
   override def artifactSuffix =
@@ -59,6 +58,6 @@ object millbundler extends CommonModule {
 }
 
 object test extends MillIntegrationTestModule {
-  override def millTestVersion = "0.10.9" //TODO
+  override def millTestVersion = millVersion()
   override def pluginsUnderTest = Seq(millbundler)
 }
