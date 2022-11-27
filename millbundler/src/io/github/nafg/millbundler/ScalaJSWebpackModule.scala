@@ -64,6 +64,25 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
 
   def webpackConfigFilename = T("webpack.config.js")
 
+  def webpackEnv: Target[Map[String, String]] = T {
+    val nodeMajorVersion = os
+      .proc("node", "--version")
+      .call()
+      .out
+      .text()
+      .trim
+      .stripPrefix("v")
+      .split('.')
+      .head
+      .toInt
+    val webpackMajorVersion = webpackVersion().split('.').head.toInt
+    Option
+      .when(nodeMajorVersion == 18 && webpackMajorVersion == 4)(
+        "NODE_OPTIONS" -> "--openssl-legacy-provider"
+      )
+      .toMap
+  }
+
   override protected def bundle = T.task { params: BundleParams =>
     copySources()
     val bundleName = bundleFilename()
@@ -82,7 +101,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
           "--config",
           webpackConfigFilename()
         ),
-        envArgs = Map("NODE_OPTIONS" -> "--openssl-legacy-provider"),
+        envArgs = webpackEnv(),
         workingDir = dir
       )
     catch {
