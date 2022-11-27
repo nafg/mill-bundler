@@ -1,6 +1,7 @@
 package io.github.nafg.millbundler.jsdeps
 
 import mill._
+import mill.modules.Jvm
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
 trait ScalaJSNpmModule extends ScalaJSDepsModule {
@@ -20,17 +21,22 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
     )
 
   def npmInstall = T {
-    val logger = T.ctx().log
     val dir = jsDepsDir().path
     val pkgJson = packageJson(allJsDeps())
+
     os.write.over(dir / "package.json", pkgJson.render(2) + "\n")
-    os.proc(npmInstallCommand())
-      .call(
-        cwd = dir,
-        stdout = os.ProcessOutput.Readlines { line =>
-          logger.debug("[npm install] " + line)
-        }
+
+    try
+      Jvm.runSubprocess(
+        commandArgs = npmInstallCommand(),
+        envArgs = Map.empty,
+        workingDir = dir
       )
+    catch {
+      case e: Exception =>
+        throw new RuntimeException("Error running npm install", e)
+    }
+
     PathRef(dir)
   }
 }

@@ -5,6 +5,7 @@ import io.github.nafg.millbundler.jsdeps.{JsDeps, ScalaJSNpmModule}
 import geny.Generator
 import mill._
 import mill.define.Target
+import mill.modules.Jvm
 import mill.scalajslib.TestScalaJSModule
 import mill.scalajslib.api.{ModuleKind, Report}
 import os.Path
@@ -75,9 +76,8 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
   def webpackConfigFilename = T("webpack.config.js")
 
   def webpack = T.task { params: WebpackParams =>
-    val logger = T.ctx().log
-    val bundleName = bundleFilename()
     copySources()
+    val bundleName = bundleFilename()
     copyInputFile().apply(params.inputFile)
     val dir = npmInstall().path
     os.write.over(
@@ -86,25 +86,19 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
     )
     val webpackPath = dir / "node_modules" / "webpack" / "bin" / "webpack"
     try
-      os.proc(
-        "node",
-        webpackPath,
-        "--bail",
-        "--profile",
-        "--config",
-        webpackConfigFilename()
-      ).call(
-        cwd = dir,
-        stdout =
-          os.ProcessOutput.Readlines(line => logger.debug("[webpack] " + line)),
-        env = Map("NODE_OPTIONS" -> "--openssl-legacy-provider")
+      Jvm.runSubprocess(
+        commandArgs = Seq(
+          "node",
+          webpackPath.toString,
+          "--config",
+          webpackConfigFilename()
+        ),
+        envArgs = Map("NODE_OPTIONS" -> "--openssl-legacy-provider"),
+        workingDir = dir
       )
     catch {
-      case e: os.SubprocessException =>
-        throw new RuntimeException(
-          "webpack failed with exit code " + e.result.exitCode,
-          e
-        )
+      case e: Exception =>
+        throw new RuntimeException("Error running webpack", e)
     }
 
     List(
