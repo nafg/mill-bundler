@@ -1,22 +1,18 @@
 package io.github.nafg.millbundler
 
-import io.github.nafg.millbundler.jsdeps.{JsDeps, ScalaJSNpmModule}
+import io.github.nafg.millbundler.jsdeps.JsDeps
 
 import geny.Generator
 import mill._
 import mill.define.Target
 import mill.modules.Jvm
-import mill.scalajslib.TestScalaJSModule
-import mill.scalajslib.api.{ModuleKind, Report}
 import os.Path
 
 //noinspection ScalaWeakerAccess
-trait ScalaJSWebpackModule extends ScalaJSNpmModule {
+trait ScalaJSWebpackModule extends ScalaJSBundleModule {
   def webpackVersion: Target[String] = "4.17.1"
   def webpackCliVersion: Target[String] = "3.1.0"
   def webpackDevServerVersion: Target[String] = "3.1.7"
-
-  def bundleFilename = T("out-bundle.js")
 
   def webpackLibraryName: Target[Option[String]]
 
@@ -31,16 +27,9 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
         )
       )
 
-  def copyInputFile = T.task { inputFile: os.Path =>
-    val dir = jsDepsDir().path
-    val copied = dir / inputFile.last
-    if (inputFile != copied)
-      os.copy.over(inputFile, copied)
-  }
-
   protected def webpackConfigJson(
       dir: os.Path,
-      params: WebpackParams,
+      params: BundleParams,
       bundleFilename: String,
       libraryName: Option[String]
   ) = {
@@ -64,7 +53,7 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
 
   protected def webpackConfig(
       dir: Path,
-      params: WebpackParams,
+      params: BundleParams,
       bundleFilename: String,
       webpackLibraryName: Option[String]
   ) =
@@ -75,7 +64,7 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
 
   def webpackConfigFilename = T("webpack.config.js")
 
-  def webpack = T.task { params: WebpackParams =>
+  override protected def bundle = T.task { params: BundleParams =>
     copySources()
     val bundleName = bundleFilename()
     copyInputFile().apply(params.inputFile)
@@ -107,17 +96,18 @@ trait ScalaJSWebpackModule extends ScalaJSNpmModule {
     )
   }
 }
+//noinspection ScalaUnusedSymbol
 object ScalaJSWebpackModule {
-  // noinspection ScalaUnusedSymbol
+  // noinspection ScalaUnusedSymbol,ScalaWeakerAccess
   trait AsApplication extends ScalaJSWebpackModule {
     override def webpackLibraryName: Target[Option[String]] = None
 
-    def devWebpack: Target[Seq[PathRef]] = T.persistent {
-      webpack().apply(WebpackParams(fastOpt().path, opt = false))
+    def devBundle: Target[Seq[PathRef]] = T.persistent {
+      bundle().apply(BundleParams(fastOpt().path, opt = false))
     }
 
-    def prodWebpack: Target[Seq[PathRef]] = T.persistent {
-      webpack().apply(WebpackParams(fullOpt().path, opt = true))
+    def prodBundle: Target[Seq[PathRef]] = T.persistent {
+      bundle().apply(BundleParams(fullOpt().path, opt = true))
     }
   }
 
@@ -159,36 +149,16 @@ object ScalaJSWebpackModule {
       PathRef(path)
     }
 
-    def devWebpack: Target[Seq[PathRef]] = T {
+    def devBundle: Target[Seq[PathRef]] = T {
       val entrypoint = writeEntrypoint().apply(fastOpt().path).path
-      webpack().apply(WebpackParams(entrypoint, opt = false)) :+ fastOpt()
+      bundle().apply(BundleParams(entrypoint, opt = false)) :+ fastOpt()
     }
 
-    def prodWebpack: Target[Seq[PathRef]] = T {
+    def prodBundle: Target[Seq[PathRef]] = T {
       val entrypoint = writeEntrypoint().apply(fullOpt().path).path
-      webpack().apply(WebpackParams(entrypoint, opt = true)) :+ fullOpt()
+      bundle().apply(BundleParams(entrypoint, opt = true)) :+ fullOpt()
     }
   }
 
-  trait Test extends TestScalaJSModule with AsApplication {
-    override def fastLinkJSTest = T {
-      val report = super.fastLinkJSTest()
-      val dir = npmInstall().path
-      val webpackParams =
-        WebpackParams(
-          report.dest.path / report.publicModules.head.jsFileName,
-          opt = false
-        )
-      webpack().apply(webpackParams)
-      val modules =
-        Report.Module(
-          moduleID = "main",
-          jsFileName = bundleFilename(),
-          sourceMapName = Some(bundleFilename() + ".map"),
-          moduleKind = ModuleKind.NoModule
-        ) +:
-          report.publicModules.toSeq.drop(1)
-      Report(publicModules = modules, dest = PathRef(dir))
-    }
-  }
+  trait Test extends AsApplication with ScalaJSBundleModule.Test
 }
