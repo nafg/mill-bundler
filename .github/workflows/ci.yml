@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'windows-latest']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: coursier/cache-action@v6
+      - uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:17
+          apps: mill
+
+      - name: Test
+        run: mill test
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: coursier/cache-action@v6
+      - uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:8
+          apps: mill
+
+      - name: Publish
+        run: mill io.kipp.mill.ci.release.ReleaseModule/publishAll
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
