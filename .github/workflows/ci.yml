@@ -27,7 +27,7 @@ jobs:
           apps: mill
 
       - name: Test
-        run: mill --no-server --jobs 0 test
+        run: mill --no-server _.test
 
   publish:
     runs-on: ubuntu-latest

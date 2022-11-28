@@ -49,6 +49,11 @@ trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule 
 
 object jsdeps extends CommonModule
 
+object testJsDeps extends MillIntegrationTestModule {
+  override def millTestVersion = millVersion()
+  override def pluginsUnderTest = Seq(jsdeps)
+}
+
 //noinspection ScalaUnusedSymbol
 object millbundler extends CommonModule {
   override def moduleDeps = Seq(jsdeps)
@@ -57,7 +62,7 @@ object millbundler extends CommonModule {
   )
 }
 
-object test extends MillIntegrationTestModule {
+object testMillBundler extends MillIntegrationTestModule {
   override def millTestVersion = millVersion()
   override def pluginsUnderTest = Seq(millbundler)
 }
