@@ -47,7 +47,12 @@ trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule 
   )
 }
 
-object jsdeps extends CommonModule
+object jsdeps extends CommonModule {
+  object test extends MillIntegrationTestModule {
+    override def millTestVersion = millVersion()
+    override def pluginsUnderTest = Seq(jsdeps)
+  }
+}
 
 //noinspection ScalaUnusedSymbol
 object millbundler extends CommonModule {
@@ -55,9 +60,9 @@ object millbundler extends CommonModule {
   override def ivyDeps = Agg(
     ivy"com.lihaoyi::geny:1.0.0"
   )
-}
 
-object test extends MillIntegrationTestModule {
-  override def millTestVersion = millVersion()
-  override def pluginsUnderTest = Seq(millbundler)
+  object test extends MillIntegrationTestModule {
+    override def millTestVersion = millVersion()
+    override def pluginsUnderTest = Seq(millbundler)
+  }
 }

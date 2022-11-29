@@ -2,6 +2,8 @@ package io.github.nafg.millbundler.jsdeps
 
 import mill._
 import mill.modules.Jvm
+import mill.scalajslib.TestScalaJSModule
+import mill.scalajslib.api.JsEnvConfig
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
 trait ScalaJSNpmModule extends ScalaJSDepsModule {
@@ -39,4 +41,17 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
 
     PathRef(dir)
   }
+}
+//noinspection ScalaWeakerAccess
+object ScalaJSNpmModule {
+  trait Test extends TestScalaJSModule with ScalaJSNpmModule {
+    override def jsEnvConfig = T {
+      val path = npmInstall().path / "node_modules"
+      println("path: " + path)
+      os.proc("ls", "react-phone-number-input")
+        .call(cwd = path, stdout = os.Inherit)
+      JsEnvConfig.NodeJs(env = Map("NODE_PATH" -> path.toString))
+    }
+  }
+
 }
