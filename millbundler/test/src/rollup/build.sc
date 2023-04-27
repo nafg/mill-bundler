@@ -15,7 +15,7 @@ object main extends ScalaJSDepsModule {
     )
 
   object test
-    extends Tests
+      extends Tests
       with ScalaJSRollupModule.Test
       with TestModule.Munit {
 

@@ -10,21 +10,25 @@ import io.kipp.mill.ci.release.CiReleaseModule
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 import de.tobiasroeser.mill.integrationtest._
 
-
 def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
 
 def millVersion = T {
   os.read(millVersionFile().path).trim
 }
 
-trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule {
+trait CommonModule
+    extends ScalaModule
+    with CiReleaseModule
+    with ScalafmtModule {
   override def scalaVersion = "2.13.10"
 
   override def publishVersion: T[String] = T {
-    VcsVersion.vcsState().format(
-      dirtyHashDigits = 0,
-      untaggedSuffix = "-SNAPSHOT"
-    )
+    VcsVersion
+      .vcsState()
+      .format(
+        dirtyHashDigits = 0,
+        untaggedSuffix = "-SNAPSHOT"
+      )
   }
 
   override def artifactSuffix =
@@ -36,8 +40,10 @@ trait CommonModule extends ScalaModule with CiReleaseModule with ScalafmtModule 
     organization = "io.github.nafg.millbundler",
     url = "https://github.com/nafg/mill-bundler",
     licenses = Seq(License.`Apache-2.0`),
-    versionControl = VersionControl.github(owner = "nafg", repo = "mill-bundler"),
-    developers = Seq(Developer("nafg", "Naftoli Gugenheim", "https://github.com/nafg"))
+    versionControl =
+      VersionControl.github(owner = "nafg", repo = "mill-bundler"),
+    developers =
+      Seq(Developer("nafg", "Naftoli Gugenheim", "https://github.com/nafg"))
   )
 
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
