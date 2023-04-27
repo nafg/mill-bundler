@@ -1,0 +1,8 @@
+pull_request_rules:
+  - name: Automatically merge successful Scala Steward PRs
+    conditions:
+      - "author=nafg-scala-steward[bot]"
+      - "status-success=test (ubuntu-latest)"
+      - "status-success=test (windows-latest)"
+    actions:
+      queue: {}
