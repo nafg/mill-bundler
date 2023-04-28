@@ -1,4 +1,4 @@
-import $ivy.`io.chris-kipp::mill-ci-release::0.1.5`
+import $ivy.`io.chris-kipp::mill-ci-release::0.1.6`
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.0`
 
 import mill._
