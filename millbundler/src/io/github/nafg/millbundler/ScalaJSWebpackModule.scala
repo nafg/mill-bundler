@@ -122,11 +122,15 @@ object ScalaJSWebpackModule {
     override def webpackLibraryName: Target[Option[String]] = None
 
     def devBundle: Target[Seq[PathRef]] = T.persistent {
-      bundle().apply(BundleParams(fastOpt().path, opt = false))
+      bundle().apply(
+        BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
+      )
     }
 
     def prodBundle: Target[Seq[PathRef]] = T.persistent {
-      bundle().apply(BundleParams(fullOpt().path, opt = true))
+      bundle().apply(
+        BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
+      )
     }
   }
 
@@ -169,13 +173,15 @@ object ScalaJSWebpackModule {
     }
 
     def devBundle: Target[Seq[PathRef]] = T {
-      val entrypoint = writeEntrypoint().apply(fastOpt().path).path
-      bundle().apply(BundleParams(entrypoint, opt = false)) :+ fastOpt()
+      val path = getReportMainFilePath(fastLinkJS())
+      val entrypoint = writeEntrypoint().apply(path).path
+      bundle().apply(BundleParams(entrypoint, opt = false)) :+ PathRef(path)
     }
 
     def prodBundle: Target[Seq[PathRef]] = T {
-      val entrypoint = writeEntrypoint().apply(fullOpt().path).path
-      bundle().apply(BundleParams(entrypoint, opt = true)) :+ fullOpt()
+      val path = getReportMainFilePath(fullLinkJS())
+      val entrypoint = writeEntrypoint().apply(path).path
+      bundle().apply(BundleParams(entrypoint, opt = true)) :+ PathRef(path)
     }
   }
 

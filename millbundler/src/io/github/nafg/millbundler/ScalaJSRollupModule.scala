@@ -67,12 +67,16 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
 
   // noinspection ScalaUnusedSymbol
   def devBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(BundleParams(fastOpt().path, opt = false))
+    bundle().apply(
+      BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
+    )
   }
 
   // noinspection ScalaUnusedSymbol
   def prodBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(BundleParams(fullOpt().path, opt = true))
+    bundle().apply(
+      BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
+    )
   }
 }
 object ScalaJSRollupModule {
