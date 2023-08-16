@@ -1,7 +1,7 @@
 package io.github.nafg.millbundler.jsdeps
 
 import mill._
-import mill.modules.Jvm
+import mill.util.Jvm
 import mill.scalajslib.TestScalaJSModule
 import mill.scalajslib.api.JsEnvConfig
 
@@ -53,5 +53,4 @@ object ScalaJSNpmModule {
       JsEnvConfig.NodeJs(env = Map("NODE_PATH" -> path.toString))
     }
   }
-
 }

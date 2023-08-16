@@ -5,7 +5,7 @@ import io.github.nafg.millbundler.jsdeps.JsDeps
 import mill.T
 import mill.api.PathRef
 import mill.define.Target
-import mill.modules.Jvm
+import mill.util.Jvm
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSRollupModule extends ScalaJSBundleModule {

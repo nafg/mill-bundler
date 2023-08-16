@@ -5,7 +5,7 @@ import io.github.nafg.millbundler.jsdeps.JsDeps
 import geny.Generator
 import mill._
 import mill.define.Target
-import mill.modules.Jvm
+import mill.util.Jvm
 import os.Path
 
 //noinspection ScalaWeakerAccess
