@@ -1,4 +1,4 @@
-import $exec.plugins
+import $file.plugins
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSDepsModule
 import io.github.nafg.millbundler.ScalaJSRollupModule

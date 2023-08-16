@@ -1,4 +1,4 @@
-import $exec.plugins
+import $file.plugins
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSNpmModule
 import mill.scalajslib.api.ModuleKind
