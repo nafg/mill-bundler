@@ -1,9 +1,10 @@
-import $exec.plugins
+import $file.plugins
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSDepsModule
 import io.github.nafg.millbundler.ScalaJSRollupModule
 import mill.scalajslib.api.ModuleKind
 import mill.scalalib.{DepSyntax, TestModule}
+import mill.{Agg, T}
 
 object main extends ScalaJSDepsModule {
   override def scalaVersion = "2.13.10"
@@ -15,7 +16,7 @@ object main extends ScalaJSDepsModule {
     )
 
   object test
-      extends Tests
+      extends ScalaJSTests
       with ScalaJSRollupModule.Test
       with TestModule.Munit {
 

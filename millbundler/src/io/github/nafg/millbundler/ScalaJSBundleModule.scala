@@ -9,6 +9,9 @@ import mill.{PathRef, T}
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSBundleModule extends ScalaJSNpmModule {
+  protected def getReportMainFilePath(report: Report): os.Path =
+    report.dest.path / report.publicModules.head.jsFileName
+
   def bundleFilename = T("out-bundle.js")
 
   def copyInputFile = T.task { inputFile: os.Path =>

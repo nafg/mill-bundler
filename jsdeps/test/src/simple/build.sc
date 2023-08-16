@@ -1,9 +1,9 @@
-import $exec.plugins
+import $file.plugins
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSNpmModule
 import mill.scalajslib.api.ModuleKind
 import mill.scalalib.{DepSyntax, TestModule}
-import mill.scalajslib.api.JsEnvConfig
+import mill.{Agg, T}
 
 object main extends ScalaJSNpmModule {
   override def scalaVersion = "2.13.10"
@@ -14,7 +14,7 @@ object main extends ScalaJSNpmModule {
       ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
     )
 
-  object test extends Tests with ScalaJSNpmModule.Test with TestModule.Munit {
+  object test extends ScalaJSTests with ScalaJSNpmModule.Test with TestModule.Munit {
 
     override def moduleKind = ModuleKind.CommonJSModule
 
