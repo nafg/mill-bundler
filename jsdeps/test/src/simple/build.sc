@@ -3,7 +3,6 @@ import $file.plugins
 import io.github.nafg.millbundler.jsdeps.ScalaJSNpmModule
 import mill.scalajslib.api.ModuleKind
 import mill.scalalib.{DepSyntax, TestModule}
-import mill.scalajslib.api.JsEnvConfig
 
 object main extends ScalaJSNpmModule {
   override def scalaVersion = "2.13.10"
