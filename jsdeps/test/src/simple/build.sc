@@ -14,7 +14,7 @@ object main extends ScalaJSNpmModule {
       ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
     )
 
-  object test extends Tests with ScalaJSNpmModule.Test with TestModule.Munit {
+  object test extends ScalaJSTests with ScalaJSNpmModule.Test with TestModule.Munit {
 
     override def moduleKind = ModuleKind.CommonJSModule
 

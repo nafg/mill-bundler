@@ -16,7 +16,7 @@ object main extends ScalaJSDepsModule {
     )
 
   object test
-      extends Tests
+      extends ScalaJSTests
       with ScalaJSWebpackModule.Test
       with TestModule.Munit {
 
