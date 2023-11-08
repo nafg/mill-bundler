@@ -15,6 +15,16 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest', 'windows-latest']
+        mill-version:
+          - 0.10.12
+          - 0.11.0-M1
+          - 0.11.0-M2
+          - 0.11.0-M3
+          - 0.11.0-M4
+          - 0.11.0-M5
+          - 0.11.0-M6
+          - 0.11.0-M7
+          - 0.11.0-M8
 
     runs-on: ${{ matrix.os }}
 
@@ -27,11 +37,26 @@ jobs:
           apps: mill
 
       - name: Test
+        env:
+          MILL_VERSION: ${{ matrix.mill-version }}
         run: |
           mill --no-server --jobs 1 __.downloadMillTestVersion 
           mill --no-server --jobs 0 _.test
 
   publish:
+    strategy:
+      matrix:
+        mill-version:
+          - 0.10.12
+          - 0.11.0-M1
+          - 0.11.0-M2
+          - 0.11.0-M3
+          - 0.11.0-M4
+          - 0.11.0-M5
+          - 0.11.0-M6
+          - 0.11.0-M7
+          - 0.11.0-M8
+
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v'))
@@ -51,3 +76,4 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MILL_VERSION: ${{ matrix.mill-version }}
