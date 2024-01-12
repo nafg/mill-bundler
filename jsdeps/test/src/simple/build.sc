@@ -6,7 +6,7 @@ import mill.scalalib.{DepSyntax, TestModule}
 import mill.{Agg, T}
 
 object main extends ScalaJSNpmModule {
-  override def scalaVersion = "2.13.10"
+  override def scalaVersion = "2.13.12"
   override def scalaJSVersion = "1.10.1"
 
   override def ivyDeps =
@@ -14,7 +14,10 @@ object main extends ScalaJSNpmModule {
       ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
     )
 
-  object test extends ScalaJSTests with ScalaJSNpmModule.Test with TestModule.Munit {
+  object test
+      extends ScalaJSTests
+      with ScalaJSNpmModule.Test
+      with TestModule.Munit {
 
     override def moduleKind = ModuleKind.CommonJSModule
 

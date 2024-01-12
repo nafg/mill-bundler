@@ -7,7 +7,7 @@ import mill.scalalib.{DepSyntax, TestModule}
 import mill.{Agg, T}
 
 object main extends ScalaJSDepsModule {
-  override def scalaVersion = "2.13.10"
+  override def scalaVersion = "2.13.12"
   override def scalaJSVersion = "1.10.1"
 
   override def ivyDeps =
