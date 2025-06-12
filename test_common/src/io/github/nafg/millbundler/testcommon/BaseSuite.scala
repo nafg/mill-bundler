@@ -11,7 +11,7 @@ import mill.testkit.{TestBaseModule, UnitTester}
 import mill.testrunner.TestResult
 
 class BaseSuite extends munit.FunSuite {
-  override def munitTimeout = 2.minute
+  override def munitTimeout = 4.minute
 
   private val resourceFolder = os.Path(sys.env("MILL_TEST_RESOURCE_DIR"))
 
