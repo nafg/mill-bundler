@@ -26,7 +26,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
           "webpack-cli" -> webpackCliVersion(),
           "webpack-dev-server" -> webpackDevServerVersion(),
           // renovate: datasource=npm depName=source-map-loader
-          "source-map-loader" -> "0.2.3"
+          "source-map-loader" -> "0.2.4"
         )
       )
 
