@@ -14,7 +14,7 @@ trait BasePublishModule
     extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule {
-  override def scalaVersion = "2.13.12"
+  override def scalaVersion = "2.13.16"
 
   override def publishVersion: T[String] = T {
     VcsVersion
