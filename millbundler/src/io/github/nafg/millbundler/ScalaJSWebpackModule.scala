@@ -77,7 +77,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
       .toInt
     val webpackMajorVersion = webpackVersion().split('.').head.toInt
     Option
-      .when(nodeMajorVersion == 18 && webpackMajorVersion == 4)(
+      .when(nodeMajorVersion >= 18 && webpackMajorVersion == 4)(
         "NODE_OPTIONS" -> "--openssl-legacy-provider"
       )
       .toMap
