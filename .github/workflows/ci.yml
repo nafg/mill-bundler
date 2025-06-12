@@ -51,7 +51,7 @@ jobs:
       - uses: coursier/cache-action@v6
       - uses: coursier/setup-action@v1
         with:
-          jvm: adopt:8
+          jvm: temurin:11
 
       - name: Publish
         run: ./mill --no-server --jobs 0 mill.scalalib.SonatypeCentralPublishModule/
