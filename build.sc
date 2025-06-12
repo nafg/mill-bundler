@@ -12,7 +12,7 @@ import mill.scalalib.scalafmt._
 def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
 
 def millVersion = T {
-  os.read(millVersionFile().path).trim
+  sys.env.getOrElse("MILL_VERSION", os.read(millVersionFile().path).trim)
 }
 
 trait CommonModule
