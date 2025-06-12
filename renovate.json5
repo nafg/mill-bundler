@@ -18,5 +18,7 @@
       datasourceTemplate: '{{datasource}}',
       depNameTemplate: '{{depName}}'
     }
-  ]
+  ],
+  rebaseWhen: "behind-base-branch",
+  automerge: true
 }
