@@ -8,6 +8,7 @@ import mill.scalalib.scalafmt._
 
 trait BaseScalaModule extends ScalaModule {
   override def scalaVersion = "2.13.16"
+  override def zincReportCachedProblems = true
 }
 
 trait BasePublishModule
