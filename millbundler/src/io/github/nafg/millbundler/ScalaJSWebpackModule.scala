@@ -10,7 +10,7 @@ import os.Path
 //noinspection ScalaWeakerAccess
 trait ScalaJSWebpackModule extends ScalaJSBundleModule {
   // renovate: datasource=npm depName=webpack
-  def webpackVersion: Target[String] = "4.47.0"
+  def webpackVersion: Target[String] = "5.99.9"
   // renovate: datasource=npm depName=webpack-cli
   def webpackCliVersion: Target[String] = "3.3.12"
   // renovate: datasource=npm depName=webpack-dev-server
