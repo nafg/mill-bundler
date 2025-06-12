@@ -1,5 +1,7 @@
 package io.github.nafg.millbundler.testcommon
 
+import scala.concurrent.duration.DurationInt
+
 import io.github.nafg.millbundler.jsdeps.ScalaJSDepsModule
 
 import mill.Agg
@@ -9,6 +11,8 @@ import mill.testkit.{TestBaseModule, UnitTester}
 import mill.testrunner.TestResult
 
 class BaseSuite extends munit.FunSuite {
+  override def munitTimeout = 2.minute
+
   private val resourceFolder = os.Path(sys.env("MILL_TEST_RESOURCE_DIR"))
 
   protected def checkTestResults(testResults: Seq[TestResult]): Unit = {
@@ -43,7 +47,7 @@ class BaseSuite extends munit.FunSuite {
       override def moduleKind = ModuleKind.CommonJSModule
       override def ivyDeps =
         super.ivyDeps() ++ Agg(
-          ivy"org.scalameta::munit::0.7.29",
+          ivy"org.scalameta::munit::1.1.1",
           ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
         )
     }
