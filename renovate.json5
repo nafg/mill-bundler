@@ -1,0 +1,22 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  baseBranches: [
+    'master'
+  ],
+  customManagers: [
+    {
+      customType: 'regex',
+      fileMatch: [
+        'millbundler/src/io/github/nafg/millbundler/ScalaJSWebpackModule\\.scala$'
+      ],
+      matchStrings: [
+        // Match comment above a Scala def version definition
+        "//\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)[^\\n]*\\n\\s*def\\s+\\S+\\s*:\\s*Target\\[String\\]\\s*=\\s*\\\"(?<currentValue>[^\\\"]+)\\\"",
+        // Match comment above a map entry like \"pkg\" -> \"1.2.3\"
+        "//\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)[^\\n]*\\n\\s*\\\"[^\\\"]+\\\"\\s*->\\s*\\\"(?<currentValue>[^\\\"]+)\\\""
+      ],
+      datasourceTemplate: '{{datasource}}',
+      depNameTemplate: '{{depName}}'
+    }
+  ]
+}

@@ -9,8 +9,11 @@ import os.Path
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSWebpackModule extends ScalaJSBundleModule {
+  // renovate: datasource=npm depName=webpack
   def webpackVersion: Target[String] = "4.17.1"
+  // renovate: datasource=npm depName=webpack-cli
   def webpackCliVersion: Target[String] = "3.1.0"
+  // renovate: datasource=npm depName=webpack-dev-server
   def webpackDevServerVersion: Target[String] = "3.1.7"
 
   def webpackLibraryName: Target[Option[String]]
@@ -22,6 +25,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
           "webpack" -> webpackVersion(),
           "webpack-cli" -> webpackCliVersion(),
           "webpack-dev-server" -> webpackDevServerVersion(),
+          // renovate: datasource=npm depName=source-map-loader
           "source-map-loader" -> "0.2.3"
         )
       )
