@@ -2,10 +2,9 @@ package io.github.nafg.millbundler
 
 import io.github.nafg.millbundler.jsdeps.JsDeps
 
-import mill.T
 import mill.api.PathRef
 import mill.define.Target
-import mill.util.Jvm
+import mill.{T, Task}
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSRollupModule extends ScalaJSBundleModule {
@@ -37,7 +36,7 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
       rollupPlugins().flatMap(_.toCliArgs)
   }
 
-  override protected def bundle = T.task { params: BundleParams =>
+  override protected def bundle = Task.Anon { params: BundleParams =>
     copySources()
 
     val bundleName = bundleFilename()
@@ -48,11 +47,9 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
       dir / "node_modules" / "rollup" / "dist" / "bin" / "rollup"
 
     try
-      Jvm.runSubprocess(
-        commandArgs =
-          Seq("node", rollupPath.toString, copied.toString) ++ rollupCliArgs(),
-        envArgs = Map.empty,
-        workingDir = dir
+      os.call(
+        Seq("node", rollupPath.toString, copied.toString) ++ rollupCliArgs(),
+        cwd = dir
       )
     catch {
       case e: Exception =>
@@ -96,7 +93,7 @@ object ScalaJSRollupModule {
   }
 
   case class OutputFormat(value: String)
-  // noinspection ScalaUnusedSymbol
+  // noinspection ScalaUnusedSymbol,ScalaWeakerAccess
   object OutputFormat {
     val AMD = OutputFormat("amd")
     val CJS = OutputFormat("cjs")

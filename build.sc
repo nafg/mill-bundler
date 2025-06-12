@@ -5,7 +5,7 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import io.kipp.mill.ci.release.CiReleaseModule
 import mill._
 import mill.scalalib._
-import mill.scalalib.api.ZincWorkerUtil.scalaNativeBinaryVersion
+import mill.scalalib.api.JvmWorkerUtil.scalaNativeBinaryVersion
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 

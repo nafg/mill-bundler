@@ -14,9 +14,13 @@ jobs:
   test:
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest']
+        os:
+          - name: ubuntu-latest
+            command: ./mill
+          - name: windows-latest
+            command: mill.bat
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.name }}
 
     steps:
       - uses: actions/checkout@v3
@@ -24,12 +28,11 @@ jobs:
       - uses: coursier/setup-action@v1
         with:
           jvm: temurin:17
-          apps: mill
 
       - name: Test
         run: |
-          mill --no-server --jobs 1 __.downloadMillTestVersion 
-          mill --no-server --jobs 0 _.test
+          ${{ matrix.os.command }} --no-server --jobs 1 __.downloadMillTestVersion 
+          ${{ matrix.os.command }} --no-server --jobs 0 _.test
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -50,10 +53,9 @@ jobs:
       - uses: coursier/setup-action@v1
         with:
           jvm: adopt:8
-          apps: mill
 
       - name: Publish
-        run: mill --no-server --jobs 0 io.kipp.mill.ci.release.ReleaseModule/publishAll
+        run: ${{ matrix.os.command }} --no-server --jobs 0 io.kipp.mill.ci.release.ReleaseModule/publishAll
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}

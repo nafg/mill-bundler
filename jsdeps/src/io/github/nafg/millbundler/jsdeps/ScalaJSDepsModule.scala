@@ -1,9 +1,8 @@
 package io.github.nafg.millbundler.jsdeps
 
-import mill.T
 import mill.api.PathRef
-import mill.define.Target
 import mill.scalajslib.ScalaJSModule
+import mill.{T, Target, Task}
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
 trait ScalaJSDepsModule extends ScalaJSModule {
@@ -21,15 +20,19 @@ trait ScalaJSDepsModule extends ScalaJSModule {
   /** JS dependencies collected from ivyDeps jars
     */
   def ivyJsDeps = T {
-    resolveDeps(transitiveIvyDeps)().iterator.toList
-      .flatMap(pathRef => JsDeps.fromJar(pathRef.path))
+    compileClasspath().toSeq.flatMap {
+      case pathRef if pathRef.path.ext == "jar" =>
+        JsDeps.fromJar(pathRef.path)
+      case _ =>
+        Seq.empty
+    }
   }
 
   final def allJsDeps: Target[JsDeps] = T {
     JsDeps.combine(ivyJsDeps() ++ transitiveJsDeps() :+ jsDeps())
   }
 
-  def jsDepsDir = T.persistent {
+  def jsDepsDir = Task(persistent = true) {
     val dir = T.ctx().dest
     os.makeDir.all(dir)
     PathRef(dir)
