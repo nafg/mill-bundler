@@ -1,6 +1,4 @@
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.1`
-import de.tobiasroeser.mill.integrationtest._
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 import mill._
 import mill.main.BuildInfo
@@ -8,14 +6,12 @@ import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 
-def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
-
-def millVersion = T {
-  os.read(millVersionFile().path).trim
+trait BaseScalaModule extends ScalaModule {
+  override def scalaVersion = "2.13.16"
 }
 
-trait CommonModule
-    extends ScalaModule
+trait BasePublishModule
+    extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule {
   override def scalaVersion = "2.13.12"
@@ -45,27 +41,33 @@ trait CommonModule
 
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
 
-  override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalajslib:${millVersion()}"
+  override def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"com.lihaoyi::mill-scalajslib:${BuildInfo.millVersion}"
   )
 }
 
-object jsdeps extends CommonModule {
-  object test extends MillIntegrationTestModule {
-    override def millTestVersion = millVersion()
-    override def pluginsUnderTest = Seq(jsdeps)
+object test_common extends BaseScalaModule {
+  override def moduleDeps = Seq(jsdeps)
+
+  override def ivyDeps = Agg(
+    ivy"com.lihaoyi::mill-testkit:${BuildInfo.millVersion}",
+    ivy"org.scalameta::munit::0.7.29"
+  )
+}
+
+object jsdeps extends BasePublishModule {
+  object test extends ScalaTests with TestModule.Munit {
+    override def moduleDeps = super.moduleDeps :+ test_common
   }
 }
 
 //noinspection ScalaUnusedSymbol
-object millbundler extends CommonModule {
+object millbundler extends BasePublishModule {
   override def moduleDeps = Seq(jsdeps)
-  override def ivyDeps = Agg(
-    ivy"com.lihaoyi::geny:1.0.0"
-  )
+  override def ivyDeps = Agg(ivy"com.lihaoyi::geny:1.0.0")
 
-  object test extends MillIntegrationTestModule {
-    override def millTestVersion = millVersion()
-    override def pluginsUnderTest = Seq(millbundler)
+  object test extends ScalaTests with TestModule.Munit {
+    override def moduleDeps = super.moduleDeps :+ test_common
+    override def testParallelism = true
   }
 }
