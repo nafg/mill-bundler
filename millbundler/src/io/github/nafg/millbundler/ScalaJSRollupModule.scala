@@ -26,6 +26,8 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
     ScalaJSRollupModule.OutputFormat.IIFE
   }
 
+  def rollupOutputName: Target[Option[String]] = T(None)
+
   def rollupCliArgs = T {
     Seq(
       "--file",
@@ -33,6 +35,7 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
       "--format",
       rollupOutputFormat().value
     ) ++
+      rollupOutputName().toSeq.flatMap(name => Seq("--name", name)) ++
       rollupPlugins().flatMap(_.toCliArgs)
   }
 
