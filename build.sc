@@ -65,7 +65,7 @@ object jsdeps extends BasePublishModule {
 //noinspection ScalaUnusedSymbol
 object millbundler extends BasePublishModule {
   override def moduleDeps = Seq(jsdeps)
-  override def ivyDeps = Agg(ivy"com.lihaoyi::geny:1.0.0")
+  override def ivyDeps = Agg(ivy"com.lihaoyi::geny:1.1.1")
 
   object test extends ScalaTests with TestModule.Munit {
     override def moduleDeps = super.moduleDeps :+ test_common
