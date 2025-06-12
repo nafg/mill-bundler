@@ -14,7 +14,7 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule {
 
   def bundleFilename = T("out-bundle.js")
 
-  def copyInputFile = T.task { inputFile: os.Path =>
+  def copyInputFile = Task.Anon { inputFile: os.Path =>
     val dir = jsDepsDir().path
     val copied = dir / inputFile.last
     if (inputFile != copied)
