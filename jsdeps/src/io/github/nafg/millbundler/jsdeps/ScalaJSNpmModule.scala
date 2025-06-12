@@ -36,6 +36,36 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
 
     PathRef(dir)
   }
+
+  def printJsUpdates() =
+    Task.Command {
+      import scala.io.AnsiColor.{BOLD, RESET}
+      val logger = Task.log
+      def pad(s: String, len: Int): String = s.padTo(len, 32.toChar)
+
+      val deps =
+        (jsDeps().dependencies ++ jsDeps().devDependencies).toSeq.sortBy(_._1)
+      val maxPkgLen = deps.map(_._1.length).max
+      val maxVerLen = deps.map(_._2.length).max
+      val proj = this.toString()
+      val latestVersions =
+        for ((pkg, ver) <- deps)
+          yield (
+            pkg,
+            ver,
+            os.call(Seq("npm", "view", pkg, "dist-tags.latest")).out.trim()
+          )
+      val updates = latestVersions.filter(x => x._2 != x._3)
+      if (updates.nonEmpty) {
+        logger.info(
+          s"$BOLD$proj $RESET${updates.length} new npm package versions"
+        )
+        for ((pkg, cur, latest) <- updates)
+          logger.info(
+            s"  $BOLD${pad(pkg, maxPkgLen)}$RESET ${pad(cur, maxVerLen)} -> $latest"
+          )
+      }
+    }
 }
 //noinspection ScalaWeakerAccess
 object ScalaJSNpmModule {
