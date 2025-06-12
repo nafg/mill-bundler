@@ -43,7 +43,7 @@ class BaseSuite extends munit.FunSuite {
       override def moduleKind = ModuleKind.CommonJSModule
       override def ivyDeps =
         super.ivyDeps() ++ Agg(
-          ivy"org.scalameta::munit::0.7.29",
+          ivy"org.scalameta::munit::1.1.1",
           ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
         )
     }

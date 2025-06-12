@@ -52,7 +52,7 @@ object test_common extends BaseScalaModule {
 
   override def ivyDeps = Agg(
     ivy"com.lihaoyi::mill-testkit:${BuildInfo.millVersion}",
-    ivy"org.scalameta::munit::0.7.29"
+    ivy"org.scalameta::munit::1.1.1"
   )
 }
 
