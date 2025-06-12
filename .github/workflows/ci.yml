@@ -54,7 +54,7 @@ jobs:
           jvm: adopt:8
 
       - name: Publish
-        run: ${{ matrix.os.command }} --no-server --jobs 0 mill.scalalib.SonatypeCentralPublishModule/
+        run: ./mill --no-server --jobs 0 mill.scalalib.SonatypeCentralPublishModule/
         env:
           MILL_PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           MILL_PGP_SECRET_BASE64: ${{ secrets.PGP_SECRET }}
