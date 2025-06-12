@@ -1,14 +1,13 @@
-import $ivy.`io.chris-kipp::mill-ci-release::0.1.9`
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
-
+import $ivy.`io.chris-kipp::mill-ci-release::0.1.9`
+import de.tobiasroeser.mill.integrationtest._
+import de.tobiasroeser.mill.vcs.version.VcsVersion
+import io.kipp.mill.ci.release.CiReleaseModule
 import mill._
 import mill.scalalib._
-import mill.scalalib.scalafmt._
-import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil.scalaNativeBinaryVersion
-import io.kipp.mill.ci.release.CiReleaseModule
-import de.tobiasroeser.mill.vcs.version.VcsVersion
-import de.tobiasroeser.mill.integrationtest._
+import mill.scalalib.publish._
+import mill.scalalib.scalafmt._
 
 def millVersionFile = T.source(PathRef(os.pwd / ".mill-version"))
 
