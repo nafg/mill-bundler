@@ -18,7 +18,7 @@ jobs:
           - name: ubuntu-latest
             command: ./mill
           - name: windows-latest
-            command: mill.bat
+            command: .\mill.bat
 
     runs-on: ${{ matrix.os.name }}
 
