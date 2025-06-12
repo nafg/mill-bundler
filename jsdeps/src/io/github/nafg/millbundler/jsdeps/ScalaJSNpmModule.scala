@@ -42,9 +42,6 @@ object ScalaJSNpmModule {
   trait Test extends TestScalaJSModule with ScalaJSNpmModule {
     override def jsEnvConfig = T {
       val path = npmInstall().path / "node_modules"
-      println("path: " + path)
-      os.proc("ls", "react-phone-number-input")
-        .call(cwd = path, stdout = os.Inherit)
       JsEnvConfig.NodeJs(env = Map("NODE_PATH" -> path.toString))
     }
   }
