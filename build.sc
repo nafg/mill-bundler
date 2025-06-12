@@ -1,11 +1,10 @@
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
-import $ivy.`io.chris-kipp::mill-ci-release::0.1.9`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.1`
 import de.tobiasroeser.mill.integrationtest._
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import io.kipp.mill.ci.release.CiReleaseModule
 import mill._
+import mill.main.BuildInfo
 import mill.scalalib._
-import mill.scalalib.api.JvmWorkerUtil.scalaNativeBinaryVersion
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 
@@ -17,7 +16,7 @@ def millVersion = T {
 
 trait CommonModule
     extends ScalaModule
-    with CiReleaseModule
+    with SonatypeCentralPublishModule
     with ScalafmtModule {
   override def scalaVersion = "2.13.12"
 
@@ -30,9 +29,8 @@ trait CommonModule
       )
   }
 
-  override def artifactSuffix =
-    "_mill" + scalaNativeBinaryVersion(millVersion()) +
-      super.artifactSuffix()
+  override def platformSuffix =
+    "_mill" + BuildInfo.millBinPlatform + super.platformSuffix()
 
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
