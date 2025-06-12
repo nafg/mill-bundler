@@ -12,7 +12,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
   // renovate: datasource=npm depName=webpack
   def webpackVersion: Target[String] = "4.47.0"
   // renovate: datasource=npm depName=webpack-cli
-  def webpackCliVersion: Target[String] = "3.1.0"
+  def webpackCliVersion: Target[String] = "3.3.12"
   // renovate: datasource=npm depName=webpack-dev-server
   def webpackDevServerVersion: Target[String] = "3.1.7"
 
