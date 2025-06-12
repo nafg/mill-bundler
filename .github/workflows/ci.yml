@@ -31,7 +31,6 @@ jobs:
 
       - name: Test
         run: |
-          ${{ matrix.os.command }} --no-server --jobs 1 __.downloadMillTestVersion 
           ${{ matrix.os.command }} --no-server --jobs 0 _.test
 
       - name: Publish Test Report
