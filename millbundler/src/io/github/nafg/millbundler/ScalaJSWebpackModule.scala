@@ -5,7 +5,6 @@ import io.github.nafg.millbundler.jsdeps.JsDeps
 import geny.Generator
 import mill._
 import mill.define.Target
-import mill.util.Jvm
 import os.Path
 
 //noinspection ScalaWeakerAccess
@@ -83,7 +82,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
       .toMap
   }
 
-  override protected def bundle = T.task { params: BundleParams =>
+  override protected def bundle = Task.Anon { params: BundleParams =>
     copySources()
     val bundleName = bundleFilename()
     copyInputFile().apply(params.inputFile)
@@ -94,15 +93,10 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
     )
     val webpackPath = dir / "node_modules" / "webpack" / "bin" / "webpack"
     try
-      Jvm.runSubprocess(
-        commandArgs = Seq(
-          "node",
-          webpackPath.toString,
-          "--config",
-          webpackConfigFilename()
-        ),
-        envArgs = webpackEnv(),
-        workingDir = dir
+      os.call(
+        Seq("node", webpackPath.toString, "--config", webpackConfigFilename()),
+        env = webpackEnv(),
+        cwd = dir
       )
     catch {
       case e: Exception =>
@@ -121,13 +115,13 @@ object ScalaJSWebpackModule {
   trait AsApplication extends ScalaJSWebpackModule {
     override def webpackLibraryName: Target[Option[String]] = None
 
-    def devBundle: Target[Seq[PathRef]] = T.persistent {
+    def devBundle: Target[Seq[PathRef]] = Task(persistent = true) {
       bundle().apply(
         BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
       )
     }
 
-    def prodBundle: Target[Seq[PathRef]] = T.persistent {
+    def prodBundle: Target[Seq[PathRef]] = Task(persistent = true) {
       bundle().apply(
         BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
       )
@@ -156,7 +150,7 @@ object ScalaJSWebpackModule {
          |""".stripMargin.trim
     }
 
-    def writeEntrypoint = T.task { src: os.Path =>
+    def writeEntrypoint = Task.Anon { src: os.Path =>
       val path = jsDepsDir().path / "entrypoint.js"
       val requires =
         os.read.lines

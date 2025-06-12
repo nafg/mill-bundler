@@ -1,7 +1,6 @@
 package io.github.nafg.millbundler.jsdeps
 
 import mill._
-import mill.util.Jvm
 import mill.scalajslib.TestScalaJSModule
 import mill.scalajslib.api.JsEnvConfig
 
@@ -29,11 +28,7 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
     os.write.over(dir / "package.json", pkgJson.render(2) + "\n")
 
     try
-      Jvm.runSubprocess(
-        commandArgs = npmInstallCommand(),
-        envArgs = Map.empty,
-        workingDir = dir
-      )
+      os.call(npmInstallCommand(), cwd = dir)
     catch {
       case e: Exception =>
         throw new RuntimeException("Error running npm install", e)
