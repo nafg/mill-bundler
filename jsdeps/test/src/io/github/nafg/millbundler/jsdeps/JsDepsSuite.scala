@@ -8,6 +8,6 @@ class JsDepsSuite extends BaseSuite {
       object test extends BaseTestModule with ScalaJSNpmModule.Test
     }
 
-    checkTestResults(build.test, "simple")
+    checkTestResults(build)(build.test, "simple")
   }
 }

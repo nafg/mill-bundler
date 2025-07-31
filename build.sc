@@ -6,8 +6,10 @@ import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 
+val millVersion = "1.0.1"
+
 trait BaseScalaModule extends ScalaModule {
-  override def scalaVersion = "2.13.16"
+  override def scalaVersion = "3.7.0"
   override def zincReportCachedProblems = true
 }
 
@@ -15,7 +17,7 @@ trait BasePublishModule
     extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule {
-  override def scalaVersion = "2.13.16"
+  override def scalaVersion = "3.7.0"
 
   override def publishVersion: T[String] = T {
     VcsVersion
@@ -43,7 +45,7 @@ trait BasePublishModule
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalajslib:${BuildInfo.millVersion}"
+    ivy"com.lihaoyi::mill-libs-scalajslib:$millVersion"
   )
 }
 
@@ -51,7 +53,7 @@ object test_common extends BaseScalaModule {
   override def moduleDeps = Seq(jsdeps)
 
   override def ivyDeps = Agg(
-    ivy"com.lihaoyi::mill-testkit:${BuildInfo.millVersion}",
+    ivy"com.lihaoyi::mill-testkit:$millVersion",
     ivy"org.scalameta::munit::1.1.1"
   )
 }

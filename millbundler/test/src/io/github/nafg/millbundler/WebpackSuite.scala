@@ -8,6 +8,6 @@ class WebpackSuite extends BaseSuite {
       object test extends BaseTestModule with ScalaJSWebpackModule.Test
     }
 
-    checkTestResults(build.test, "webpack-simple")
+    checkTestResults(build)(build.test, "webpack-simple")
   }
 }

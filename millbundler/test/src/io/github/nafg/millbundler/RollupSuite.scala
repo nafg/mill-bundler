@@ -12,6 +12,6 @@ class RollupSuite extends BaseSuite {
       }
     }
 
-    checkTestResults(build.test, "rollup")
+    checkTestResults(build)(build.test, "rollup")
   }
 }

@@ -1,34 +1,32 @@
 package io.github.nafg.millbundler
 
 import io.github.nafg.millbundler.jsdeps.JsDeps
-
 import mill.api.PathRef
-import mill.define.Target
 import mill.{T, Task}
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSRollupModule extends ScalaJSBundleModule {
-  def rollupVersion: Target[String] = "*"
+  def rollupVersion: T[String] = "*"
 
-  def rollupPlugins: Target[Seq[ScalaJSRollupModule.Plugin]] = T {
+  def rollupPlugins: T[Seq[ScalaJSRollupModule.Plugin]] = Task {
     Seq[ScalaJSRollupModule.Plugin](
       ScalaJSRollupModule.Plugin.core("node-resolve"),
       ScalaJSRollupModule.Plugin.core("commonjs")
     )
   }
 
-  override def jsDeps: Target[JsDeps] =
+  override def jsDeps: T[JsDeps] =
     super.jsDeps() ++
       JsDeps(devDependencies = Map("rollup" -> rollupVersion())) ++
       JsDeps.combine(rollupPlugins().map(_.toJsDep))
 
-  def rollupOutputFormat: Target[ScalaJSRollupModule.OutputFormat] = T {
+  def rollupOutputFormat: T[ScalaJSRollupModule.OutputFormat] = Task {
     ScalaJSRollupModule.OutputFormat.IIFE
   }
 
-  def rollupOutputName: Target[Option[String]] = T(None)
+  def rollupOutputName: T[Option[String]] = Task(None)
 
-  def rollupCliArgs = T {
+  def rollupCliArgs = Task {
     Seq(
       "--file",
       (npmInstall().path / bundleFilename()).toString(),
@@ -39,11 +37,11 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
       rollupPlugins().flatMap(_.toCliArgs)
   }
 
-  override protected def bundle = Task.Anon { params: BundleParams =>
+  override protected def bundle = Task.Anon { (params: BundleParams) =>
     copySources()
 
     val bundleName = bundleFilename()
-    val copied = copyInputFile().apply(params.inputFile).path
+    val copied = copyInputFile.apply().apply(params.inputFile).path
     val dir = npmInstall().path
 
     val rollupPath =
@@ -66,15 +64,15 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
   }
 
   // noinspection ScalaUnusedSymbol
-  def devBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(
+  def devBundle: T[Seq[PathRef]] = Task {
+    bundle.apply().apply(
       BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
     )
   }
 
   // noinspection ScalaUnusedSymbol
-  def prodBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(
+  def prodBundle: T[Seq[PathRef]] = Task {
+    bundle.apply().apply(
       BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
     )
   }

@@ -2,19 +2,18 @@ package io.github.nafg.millbundler
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSNpmModule
 
-import mill.define.Task
 import mill.scalajslib.TestScalaJSModule
 import mill.scalajslib.api.{ModuleKind, Report}
-import mill.{PathRef, T}
+import mill.{PathRef, Task}
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSBundleModule extends ScalaJSNpmModule {
   protected def getReportMainFilePath(report: Report): os.Path =
     report.dest.path / report.publicModules.head.jsFileName
 
-  def bundleFilename = T("out-bundle.js")
+  def bundleFilename = Task("out-bundle.js")
 
-  def copyInputFile = Task.Anon { inputFile: os.Path =>
+  def copyInputFile = Task.Anon { (inputFile: os.Path) =>
     val dir = jsDepsDir().path
     val copied = dir / inputFile.last
     if (inputFile != copied)
@@ -28,9 +27,9 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule {
 object ScalaJSBundleModule {
   // noinspection ScalaUnusedSymbol
   trait Test extends TestScalaJSModule { this: ScalaJSBundleModule =>
-    override def fastLinkJSTest = T {
+    override def fastLinkJSTest = Task {
       val report = super.fastLinkJSTest()
-      bundle().apply(
+      bundle.apply().apply(
         BundleParams(
           report.dest.path / report.publicModules.head.jsFileName,
           opt = false

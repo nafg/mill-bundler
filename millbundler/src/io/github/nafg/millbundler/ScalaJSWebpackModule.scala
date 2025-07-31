@@ -3,22 +3,21 @@ package io.github.nafg.millbundler
 import io.github.nafg.millbundler.jsdeps.JsDeps
 
 import geny.Generator
-import mill._
-import mill.define.Target
+import mill.*
 import os.Path
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSWebpackModule extends ScalaJSBundleModule {
   // renovate: datasource=npm depName=webpack
-  def webpackVersion: Target[String] = "5.99.9"
+  def webpackVersion: T[String] = "5.99.9"
   // renovate: datasource=npm depName=webpack-cli
-  def webpackCliVersion: Target[String] = "6.0.1"
+  def webpackCliVersion: T[String] = "6.0.1"
   // renovate: datasource=npm depName=webpack-dev-server
-  def webpackDevServerVersion: Target[String] = "5.2.2"
+  def webpackDevServerVersion: T[String] = "5.2.2"
 
-  def webpackLibraryName: Target[Option[String]]
+  def webpackLibraryName: T[Option[String]]
 
-  override def jsDeps: Target[JsDeps] =
+  override def jsDeps: T[JsDeps] =
     super.jsDeps() ++
       JsDeps(
         devDependencies = Map(
@@ -65,9 +64,9 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
         .render(2) +
       ";\n"
 
-  def webpackConfigFilename = T("webpack.config.js")
+  def webpackConfigFilename = Task("webpack.config.js")
 
-  def webpackEnv: Target[Map[String, String]] = T {
+  def webpackEnv: Task[Map[String, String]] = Task {
     val nodeMajorVersion = os
       .proc("node", "--version")
       .call()
@@ -86,10 +85,10 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
       .toMap
   }
 
-  override protected def bundle = Task.Anon { params: BundleParams =>
+  override protected def bundle = Task.Anon { (params: BundleParams) =>
     copySources()
     val bundleName = bundleFilename()
-    copyInputFile().apply(params.inputFile)
+    copyInputFile.apply().apply(params.inputFile)
     val dir = npmInstall().path
     os.write.over(
       dir / webpackConfigFilename(),
@@ -117,16 +116,16 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
 object ScalaJSWebpackModule {
   // noinspection ScalaUnusedSymbol,ScalaWeakerAccess
   trait AsApplication extends ScalaJSWebpackModule {
-    override def webpackLibraryName: Target[Option[String]] = None
+    override def webpackLibraryName: T[Option[String]] = None
 
-    def devBundle: Target[Seq[PathRef]] = Task(persistent = true) {
-      bundle().apply(
+    def devBundle: T[Seq[PathRef]] = Task(persistent = true) {
+      bundle.apply().apply(
         BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
       )
     }
 
-    def prodBundle: Target[Seq[PathRef]] = Task(persistent = true) {
-      bundle().apply(
+    def prodBundle: T[Seq[PathRef]] = Task(persistent = true) {
+      bundle.apply().apply(
         BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
       )
     }
@@ -154,7 +153,7 @@ object ScalaJSWebpackModule {
          |""".stripMargin.trim
     }
 
-    def writeEntrypoint = Task.Anon { src: os.Path =>
+    def writeEntrypoint = Task.Anon { (src: os.Path) =>
       val path = jsDepsDir().path / "entrypoint.js"
       val requires =
         os.read.lines
@@ -170,16 +169,16 @@ object ScalaJSWebpackModule {
       PathRef(path)
     }
 
-    def devBundle: Target[Seq[PathRef]] = T {
+    def devBundle: Task[Seq[PathRef]] = Task {
       val path = getReportMainFilePath(fastLinkJS())
-      val entrypoint = writeEntrypoint().apply(path).path
-      bundle().apply(BundleParams(entrypoint, opt = false)) :+ PathRef(path)
+      val entrypoint = writeEntrypoint.apply().apply(path).path
+      bundle.apply().apply(BundleParams(entrypoint, opt = false)) :+ PathRef(path)
     }
 
-    def prodBundle: Target[Seq[PathRef]] = T {
+    def prodBundle: Task[Seq[PathRef]] = Task {
       val path = getReportMainFilePath(fullLinkJS())
-      val entrypoint = writeEntrypoint().apply(path).path
-      bundle().apply(BundleParams(entrypoint, opt = true)) :+ PathRef(path)
+      val entrypoint = writeEntrypoint.apply().apply(path).path
+      bundle.apply().apply(BundleParams(entrypoint, opt = true)) :+ PathRef(path)
     }
   }
 
