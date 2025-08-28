@@ -1,19 +1,21 @@
 package io.github.nafg.millbundler.jsdeps
 
-import mill._
+import mill.*
 import mill.scalajslib.TestScalaJSModule
 import mill.scalajslib.api.JsEnvConfig
+import mill.api.BuildCtx
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
 trait ScalaJSNpmModule extends ScalaJSDepsModule {
-  def npmCommand = T {
+  def npmCommand = Task {
     if (System.getProperty("os.name").toLowerCase.contains("windows"))
       "npm.cmd"
     else
       "npm"
   }
 
-  def npmInstallCommand = T(Seq(npmCommand(), "install", "--force"))
+  def npmInstallCommand =
+    Task { Seq(npmCommand(), "install", "--force") }
 
   protected def packageJson(deps: JsDeps) =
     ujson.Obj(
@@ -21,20 +23,19 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
       "devDependencies" -> deps.devDependencies
     )
 
-  def npmInstall = T {
-    val dir = jsDepsDir().path
+  def npmInstall = Task {
     val pkgJson = packageJson(allJsDeps())
 
-    os.write.over(dir / "package.json", pkgJson.render(2) + "\n")
+    os.write.over(Task.dest / "package.json", pkgJson.render(2) + "\n")
 
     try
-      os.call(npmInstallCommand(), cwd = dir)
+      os.call(npmInstallCommand(), cwd = Task.dest)
     catch {
       case e: Exception =>
         throw new RuntimeException("Error running npm install", e)
     }
 
-    PathRef(dir)
+    PathRef(Task.dest)
   }
 
   def printJsUpdates() =
@@ -70,7 +71,7 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule {
 //noinspection ScalaWeakerAccess
 object ScalaJSNpmModule {
   trait Test extends TestScalaJSModule with ScalaJSNpmModule {
-    override def jsEnvConfig = T {
+    override def jsEnvConfig = Task {
       val path = npmInstall().path / "node_modules"
       JsEnvConfig.NodeJs(env = Map("NODE_PATH" -> path.toString))
     }

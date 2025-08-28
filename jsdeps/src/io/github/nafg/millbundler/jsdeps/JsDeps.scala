@@ -1,6 +1,6 @@
 package io.github.nafg.millbundler.jsdeps
 
-import java.io._
+import java.io.*
 import java.util.zip.ZipInputStream
 
 case class JsDeps(

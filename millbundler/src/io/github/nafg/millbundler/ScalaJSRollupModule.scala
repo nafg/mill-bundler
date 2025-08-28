@@ -3,35 +3,34 @@ package io.github.nafg.millbundler
 import io.github.nafg.millbundler.jsdeps.JsDeps
 
 import mill.api.PathRef
-import mill.define.Target
-import mill.{T, Task}
+import mill.*
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSRollupModule extends ScalaJSBundleModule {
-  def rollupVersion: Target[String] = "*"
+  def rollupVersion: Task.Simple[String] = "*"
 
-  def rollupPlugins: Target[Seq[ScalaJSRollupModule.Plugin]] = T {
+  def rollupPlugins: Task.Simple[Seq[ScalaJSRollupModule.Plugin]] = Task {
     Seq[ScalaJSRollupModule.Plugin](
       ScalaJSRollupModule.Plugin.core("node-resolve"),
       ScalaJSRollupModule.Plugin.core("commonjs")
     )
   }
 
-  override def jsDeps: Target[JsDeps] =
+  override def jsDeps: Task.Simple[JsDeps] =
     super.jsDeps() ++
       JsDeps(devDependencies = Map("rollup" -> rollupVersion())) ++
       JsDeps.combine(rollupPlugins().map(_.toJsDep))
 
-  def rollupOutputFormat: Target[ScalaJSRollupModule.OutputFormat] = T {
+  def rollupOutputFormat: Task.Simple[ScalaJSRollupModule.OutputFormat] = Task {
     ScalaJSRollupModule.OutputFormat.IIFE
   }
 
-  def rollupOutputName: Target[Option[String]] = T(None)
+  def rollupOutputName: Task.Simple[Option[String]] = Task(None)
 
-  def rollupCliArgs = T {
+  protected def rollupCliArgs = Task.Anon {
     Seq(
       "--file",
-      (npmInstall().path / bundleFilename()).toString(),
+      (Task.dest / bundleFilename()).toString(),
       "--format",
       rollupOutputFormat().value
     ) ++
@@ -39,20 +38,20 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
       rollupPlugins().flatMap(_.toCliArgs)
   }
 
-  override protected def bundle = Task.Anon { params: BundleParams =>
-    copySources()
-
-    val bundleName = bundleFilename()
-    val copied = copyInputFile().apply(params.inputFile).path
-    val dir = npmInstall().path
+  override protected def bundle = Task.Anon { (params: BundleParams) =>
+    val copied = copyInputFile.apply()(params.inputFiles)
 
     val rollupPath =
-      dir / "node_modules" / "rollup" / "dist" / "bin" / "rollup"
+      npmInstall().path / "node_modules" / "rollup" / "dist" / "bin" / "rollup"
 
     try
       os.call(
-        Seq("node", rollupPath.toString, copied.toString) ++ rollupCliArgs(),
-        cwd = dir
+        Seq(
+          "node",
+          rollupPath.toString,
+          copied.head.path.toString
+        ) ++ rollupCliArgs(),
+        cwd = Task.dest
       )
     catch {
       case e: Exception =>
@@ -60,21 +59,21 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
     }
 
     List(
-      PathRef(dir / bundleName),
-      PathRef(dir / (bundleName + ".map"))
+      PathRef(Task.dest / bundleFilename()),
+      PathRef(Task.dest / (bundleFilename() + ".map"))
     )
   }
 
   // noinspection ScalaUnusedSymbol
-  def devBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(
+  def devBundle: Task.Simple[Seq[PathRef]] = Task {
+    bundle.apply()(
       BundleParams(getReportMainFilePath(fastLinkJS()), opt = false)
     )
   }
 
   // noinspection ScalaUnusedSymbol
-  def prodBundle: Target[Seq[PathRef]] = T {
-    bundle().apply(
+  def prodBundle: Task.Simple[Seq[PathRef]] = Task {
+    bundle.apply()(
       BundleParams(getReportMainFilePath(fullLinkJS()), opt = true)
     )
   }

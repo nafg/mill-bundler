@@ -1,13 +1,19 @@
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.1`
-import de.tobiasroeser.mill.vcs.version.VcsVersion
-import mill._
-import mill.main.BuildInfo
-import mill.scalalib._
-import mill.scalalib.publish._
-import mill.scalalib.scalafmt._
+//| mvnDeps:
+//| - "com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION"
+//| - "com.lihaoyi::mill-contrib-versionfile:$MILL_VERSION"
+
+import mill.*
+import mill.contrib.buildinfo.BuildInfo
+import mill.constants.BuildInfo.millVersion
+import mill.scalalib.*
+import mill.scalalib.publish.*
+import mill.scalalib.scalafmt.*
+import mill.contrib.versionfile.VersionFileModule
+
+object versionFile extends VersionFileModule
 
 trait BaseScalaModule extends ScalaModule {
-  override def scalaVersion = "2.13.16"
+  override def scalaVersion = "3.7.2"
   override def zincReportCachedProblems = true
 }
 
@@ -15,19 +21,9 @@ trait BasePublishModule
     extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule {
-  override def scalaVersion = "2.13.16"
+  override def scalaVersion = "3.7.2"
 
-  override def publishVersion: T[String] = T {
-    VcsVersion
-      .vcsState()
-      .format(
-        dirtyHashDigits = 0,
-        untaggedSuffix = "-SNAPSHOT"
-      )
-  }
-
-  override def platformSuffix =
-    "_mill" + BuildInfo.millBinPlatform + super.platformSuffix()
+  override def publishVersion = versionFile.currentVersion().toString
 
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
@@ -42,17 +38,17 @@ trait BasePublishModule
 
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
 
-  override def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalajslib:${BuildInfo.millVersion}"
+  override def mvnDeps = super.mvnDeps() ++ Seq(
+    mvn"com.lihaoyi::mill-libs:${millVersion}"
   )
 }
 
 object test_common extends BaseScalaModule {
   override def moduleDeps = Seq(jsdeps)
 
-  override def ivyDeps = Agg(
-    ivy"com.lihaoyi::mill-testkit:${BuildInfo.millVersion}",
-    ivy"org.scalameta::munit::1.1.1"
+  override def mvnDeps = Seq(
+    mvn"com.lihaoyi::mill-testkit:${millVersion}",
+    mvn"org.scalameta::munit::1.1.1"
   )
 }
 
@@ -65,7 +61,7 @@ object jsdeps extends BasePublishModule {
 //noinspection ScalaUnusedSymbol
 object millbundler extends BasePublishModule {
   override def moduleDeps = Seq(jsdeps)
-  override def ivyDeps = Agg(ivy"com.lihaoyi::geny:1.1.1")
+  override def mvnDeps = Seq(mvn"com.lihaoyi::geny:1.1.1")
 
   object test extends ScalaTests with TestModule.Munit {
     override def moduleDeps = super.moduleDeps :+ test_common
