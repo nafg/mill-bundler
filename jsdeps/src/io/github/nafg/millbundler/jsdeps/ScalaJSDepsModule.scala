@@ -2,24 +2,25 @@ package io.github.nafg.millbundler.jsdeps
 
 import mill.api.PathRef
 import mill.scalajslib.ScalaJSModule
-import mill.{T, Target, Task}
+import mill.Task
+import mill.api.BuildCtx
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
 trait ScalaJSDepsModule extends ScalaJSModule {
 
   /** JS dependencies, explicitly defined for this module
     */
-  def jsDeps = T(JsDeps())
+  def jsDeps = Task(JsDeps())
 
   /** JS dependencies of moduleDeps, transitively.
     */
-  def transitiveJsDeps = T.sequence(
+  def transitiveJsDeps = Task.sequence(
     recursiveModuleDeps.collect { case mod: ScalaJSDepsModule => mod.allJsDeps }
   )
 
   /** JS dependencies collected from ivyDeps jars
     */
-  def ivyJsDeps = T {
+  def ivyJsDeps = Task {
     compileClasspath().toSeq.flatMap {
       case pathRef if pathRef.path.ext == "jar" =>
         JsDeps.fromJar(pathRef.path)
@@ -28,19 +29,21 @@ trait ScalaJSDepsModule extends ScalaJSModule {
     }
   }
 
-  final def allJsDeps: Target[JsDeps] = T {
+  final def allJsDeps: Task[JsDeps] = Task {
     JsDeps.combine(ivyJsDeps() ++ transitiveJsDeps() :+ jsDeps())
   }
 
   def jsDepsDir = Task(persistent = true) {
-    val dir = T.ctx().dest
+    val dir = Task.ctx().dest
     os.makeDir.all(dir)
     PathRef(dir)
   }
 
-  def copySources = T {
+  def copySources = Task {
     val dir = jsDepsDir().path
-    for ((path, contents) <- allJsDeps().jsSources)
-      os.write.over(dir / os.RelPath(path), contents)
+    BuildCtx.withFilesystemCheckerDisabled {
+      for ((path, contents) <- allJsDeps().jsSources)
+        os.write.over(dir / os.RelPath(path), contents)
+    }
   }
 }

@@ -4,12 +4,12 @@ import scala.concurrent.duration.DurationInt
 
 import io.github.nafg.millbundler.jsdeps.ScalaJSDepsModule
 
-import mill.Agg
 import mill.scalajslib.api.ModuleKind
 import mill.scalalib.{DepSyntax, TestModule}
-import mill.testkit.{TestBaseModule, UnitTester}
-import mill.testrunner.TestResult
-
+import mill.testkit.{TestRootModule, UnitTester}
+import mill.javalib.testrunner.TestResult
+import mill.api.Discover
+import mill.util.TokenReaders.*
 class BaseSuite extends munit.FunSuite {
   override def munitTimeout = 4.minute
 
@@ -29,26 +29,29 @@ class BaseSuite extends munit.FunSuite {
   ): Unit =
     UnitTester(test, resourceFolder / name)
       .scoped { tester =>
-        tester(test.test()) match {
-          case Left(f) => throw f
+        tester(test.testOnly()) match {
+          case Left(f) => f.throwException
           case Right(UnitTester.Result((_, testResults), _)) =>
             checkTestResults(testResults)
         }
       }
 
-  abstract class BaseBuild extends TestBaseModule with ScalaJSDepsModule {
+  abstract class BaseBuild extends TestRootModule with ScalaJSDepsModule {
     override def scalaVersion = "2.13.16"
     override def scalaJSVersion = "1.19.0"
 
+    lazy val millDiscover = Discover[this.type]
     abstract class BaseTestModule
-        extends TestBaseModule
+        extends TestRootModule
         with ScalaJSTests
         with TestModule.Munit {
+
+      lazy val millDiscover = Discover[this.type]
       override def moduleKind = ModuleKind.CommonJSModule
-      override def ivyDeps =
-        super.ivyDeps() ++ Agg(
-          ivy"org.scalameta::munit::1.1.1",
-          ivy"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
+      override def mvnDeps =
+        super.mvnDeps() ++ Seq(
+          mvn"org.scalameta::munit::1.1.1",
+          mvn"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
         )
     }
   }
