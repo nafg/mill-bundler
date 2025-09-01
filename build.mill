@@ -9,6 +9,7 @@ import mill.scalalib.*
 import mill.scalalib.publish.*
 import mill.scalalib.scalafmt.*
 import mill.contrib.versionfile.VersionFileModule
+import mill.util.VcsVersion
 
 object versionFile extends VersionFileModule
 
@@ -23,7 +24,13 @@ trait BasePublishModule
     with ScalafmtModule {
   override def scalaVersion = "3.7.2"
 
-  override def publishVersion = versionFile.currentVersion().toString
+  override def publishVersion: T[String] =
+    VcsVersion
+      .vcsState()
+      .format(
+        dirtyHashDigits = 0,
+        untaggedSuffix = "-SNAPSHOT"
+      )
 
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
