@@ -19,8 +19,8 @@ import $ivy.`io.github.nafg.millbundler::jsdeps::0.1.0`, io.github.nafg.millbund
 
 
 object frontend extends ScalaJSNpmModule {
-  override def scalaVersion = "2.13.10"
-  override def scalaJSVersion = "1.12.0"
+  override def scalaVersion = "3.7.2"
+  override def scalaJSVersion = "1.19.0"
   override def jsDeps =
     super.jsDeps() ++
       JsDeps(

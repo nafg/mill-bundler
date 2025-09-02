@@ -1,6 +1,8 @@
 package io.github.nafg.millbundler
 
 import io.github.nafg.millbundler.testcommon.BaseSuite
+import mill.api.Discover
+import mill.util.TokenReaders.*
 
 class RollupSuite extends BaseSuite {
   test("Rollup") {
@@ -9,7 +11,11 @@ class RollupSuite extends BaseSuite {
         override def rollupPlugins =
           super.rollupPlugins() :+
             ScalaJSRollupModule.Plugin.core("json")
+
+        lazy val millDiscover = Discover[this.type]
       }
+
+      lazy val millDiscover = Discover[test.type]
     }
 
     checkTestResults(build.test, "rollup")
