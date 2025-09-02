@@ -60,6 +60,7 @@ object test_common extends BaseScalaModule {
 }
 
 object jsdeps extends BasePublishModule {
+  def platformSuffix = s"_mill${mill.util.BuildInfo.millBinPlatform}"
   object test extends ScalaTests with TestModule.Munit {
     override def moduleDeps = super.moduleDeps :+ test_common
   }
@@ -70,6 +71,7 @@ object millbundler extends BasePublishModule {
   override def moduleDeps = Seq(jsdeps)
   override def mvnDeps = Seq(mvn"com.lihaoyi::geny:1.1.1")
 
+  def platformSuffix = s"_mill${mill.util.BuildInfo.millBinPlatform}"
   object test extends ScalaTests with TestModule.Munit {
     override def moduleDeps = super.moduleDeps :+ test_common
     override def testParallelism = true
