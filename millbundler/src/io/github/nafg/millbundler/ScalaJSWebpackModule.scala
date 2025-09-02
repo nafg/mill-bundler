@@ -93,12 +93,14 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
       configPath,
       webpackConfig(Task.dest, params, bundleFilename(), webpackLibraryName())
     )
-    val webpackPath =
-      npmInstall().path / "node_modules" / "webpack" / "bin" / "webpack"
+
+    for path <- os.list(npmInstall().path) do
+      os.remove(Task.dest / path.last)
+      os.symlink(Task.dest / path.last, path)
 
     try
       os.call(
-        Seq("node", webpackPath.toString, "--config", configPath.toString),
+        Seq("npx", "webpack", "--config", configPath.toString),
         env = webpackEnv(),
         cwd = Task.dest
       )

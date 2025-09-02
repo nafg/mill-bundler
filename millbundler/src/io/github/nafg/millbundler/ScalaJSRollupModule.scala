@@ -4,6 +4,7 @@ import io.github.nafg.millbundler.jsdeps.JsDeps
 
 import mill.api.PathRef
 import mill.*
+import scala.compiletime.ops.double
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSRollupModule extends ScalaJSBundleModule {
@@ -41,14 +42,15 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
   override protected def bundle = Task.Anon { (params: BundleParams) =>
     val copied = copyInputFile.apply()(params.inputFiles)
 
-    val rollupPath =
-      npmInstall().path / "node_modules" / "rollup" / "dist" / "bin" / "rollup"
+    for path <- os.list(npmInstall().path) do
+      os.remove(Task.dest / path.last)
+      os.symlink(Task.dest / path.last, path)
 
     try
       os.call(
         Seq(
-          "node",
-          rollupPath.toString,
+          "npx",
+          "rollup",
           copied.head.path.toString
         ) ++ rollupCliArgs(),
         cwd = Task.dest
