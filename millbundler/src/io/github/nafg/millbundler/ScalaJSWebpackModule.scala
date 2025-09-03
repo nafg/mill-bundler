@@ -47,7 +47,9 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
     ujson.Obj(
       "mode" -> (if (params.opt) "production" else "development"),
       "devtool" -> "source-map",
-      "entry" -> (dir / params.inputFiles.head.last).toString,
+      "entry" -> params.inputFiles.headOption
+        .map(f => (dir / f.last).toString)
+        .getOrElse(throw new IllegalArgumentException("inputFiles is empty")),
       "output" -> ujson.Obj.from(outputCfg.view.mapValues(ujson.Str(_))),
       "context" -> dir.toString
     )
