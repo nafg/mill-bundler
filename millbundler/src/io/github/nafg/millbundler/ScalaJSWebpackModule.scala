@@ -3,9 +3,10 @@ package io.github.nafg.millbundler
 import io.github.nafg.millbundler.jsdeps.JsDeps
 
 import geny.Generator
-import os.Path
 
 import mill.*
+import mill.scalajslib.api.ModuleKind
+import os.Path
 
 //noinspection ScalaWeakerAccess
 trait ScalaJSWebpackModule extends ScalaJSBundleModule:
@@ -17,31 +18,6 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
   def webpackDevServerVersion: Task.Simple[String] = "5.2.2"
 
   def webpackLibraryName: Task.Simple[Option[String]]
-
-  given [T <: "array-push" | "commonjs" | "module"]
-      : upickle.default.ReadWriter[T] =
-    val x = upickle.default
-      .readwriter[ujson.Value]
-      .bimap["array-push" | "commonjs" | "module"](
-        {
-          case v: "array-push" => upickle.default.writeJs(v)
-          case v: "commonjs"   => upickle.default.writeJs(v)
-          case v: "module"     => upickle.default.writeJs(v)
-        },
-        json =>
-          json.strOpt
-            .collect[("array-push" | "commonjs" | "module")] {
-              case "array-push" => "array-push"
-              case "commonjs"   => "commonjs"
-              case "module"     => "module"
-            }
-            .getOrElse(throw new Exception("Invalid value"))
-      )
-      .narrow[T]
-    upickle.default.ReadWriter.join[T](using x, x)
-  end given
-
-  def webpackChunkFormat: T["array-push" | "commonjs" | "module"] = "module"
 
   override def jsDeps: Task.Simple[JsDeps] =
     super.jsDeps() ++
@@ -77,9 +53,8 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
             "path" -> Task.dest.toString,
             "filename" -> outputEntryFileNames()
           )
-    val outputCfg = ujson.Obj(
-      "chunkFormat" -> webpackChunkFormat(),
-      (outputPaths.value ++ libraryOutputCfg.value).toSeq*
+    val outputCfg = ujson.Obj.from(
+      (outputPaths.value ++ libraryOutputCfg.value).toSeq
     )
     ujson.Obj(
       "mode" -> (if params.opt then "production" else "development"),
@@ -90,6 +65,9 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
       "resolve" -> ujson.Obj(
         "fallback" -> ujson.Obj(
           "crypto" -> ujson.Bool(false)
+        ),
+        "modules" -> ujson.Arr(
+          ujson.Str(npmInstall().path.toString + "/node_modules")
         )
       )
       // "module" -> ujson.Obj(
@@ -132,6 +110,12 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
       .toMap
   }
 
+  override def fastLinkJS = Task {
+    val report = super.fastLinkJS()
+    linkNpmInstall()
+    report
+  }
+
   override protected def bundle = Task.Anon { (params: BundleParams) =>
 
     val configPath = Task.dest / webpackConfigFilename()
@@ -141,25 +125,19 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
       webpackConfig()(params)
     )
 
-    linkNpmInstall()
-
     val webpackPath =
-      Task.dest / "node_modules" / "webpack" / "bin" / "webpack"
+      npmInstall().path / "node_modules" / "webpack" / "bin" / "webpack"
 
     try
       os.call(
         Seq("node", webpackPath.toString, "--config", configPath.toString),
-        env = webpackEnv(),
         cwd = Task.dest
       )
     catch
       case e: Exception =>
         throw new RuntimeException("Error running webpack", e)
 
-    List(
-      PathRef(Task.dest / bundleFilename()),
-      PathRef(Task.dest / (bundleFilename() + ".map"))
-    )
+    bundlePaths()(params.inputFiles).toSeq
   }
 
 end ScalaJSWebpackModule

@@ -17,14 +17,16 @@ trait ScalaJSNpmModule extends ScalaJSDepsModule:
   def npmInstallCommand =
     Task(Seq(npmCommand(), "install", "--force"))
 
-  protected def packageJson(deps: JsDeps) =
-    ujson.Obj(
-      "dependencies" -> deps.dependencies,
-      "devDependencies" -> deps.devDependencies
-    )
+  protected def packageJson: Task[JsDeps => ujson.Obj] = Task.Anon {
+    (deps: JsDeps) =>
+      ujson.Obj(
+        "dependencies" -> deps.dependencies,
+        "devDependencies" -> deps.devDependencies
+      )
+  }
 
   def npmInstall = Task {
-    val pkgJson = packageJson(allJsDeps())
+    val pkgJson = packageJson()(allJsDeps())
 
     os.write.over(Task.dest / "package.json", pkgJson.render(2) + "\n")
 

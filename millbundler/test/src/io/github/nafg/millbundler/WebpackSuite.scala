@@ -12,6 +12,10 @@ class WebpackSuite extends BaseSuite:
       object test extends BaseTestModule with ScalaJSWebpackModule.Test:
         lazy val millDiscover = Discover[this.type]
 
+        // override def webpackLibraryName = Some("WebpackTest")
+
+        // override def webpackChunkFormat = "commonjs"
+
       lazy val millDiscover = Discover[test.type]
 
     checkTestResults(build.test, "webpack-simple")
