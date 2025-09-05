@@ -3,50 +3,48 @@ package io.github.nafg.millbundler
 import io.github.nafg.millbundler.jsdeps.ScalaJSNpmModule
 
 import mill.*
+import mill.PathRef
+import mill.T
 import mill.scalajslib.TestScalaJSModule
-import mill.scalajslib.api.{ModuleKind, Report}
-import mill.{PathRef, T}
+import mill.scalajslib.api.ModuleKind
+import mill.scalajslib.api.Report
 
 //noinspection ScalaWeakerAccess
-trait ScalaJSBundleModule extends ScalaJSNpmModule {
-  protected def getReportMainFilePath(report: Report): os.Path =
-    report.dest.path / report.publicModules.head.jsFileName
+trait ScalaJSBundleModule extends ScalaJSNpmModule:
 
-  def bundleFilename = Task("out-bundle.js")
+  protected def getReportMainFilePath(report: Report): Iterable[os.Path] =
+    report.publicModules.map(module => report.dest.path / module.jsFileName)
 
-  def copyInputFile = Task.Anon { (inputFiles: Seq[os.Path]) =>
+  def bundleFilename: T[String] = "out-bundle.js"
+  def outputEntryFileNames: T[String] = "out-bundle-[name].js"
+
+  def copyInputFile = Task.Anon { (inputFiles: Iterable[os.Path]) =>
     val copied = inputFiles.map(Task.dest / _.last)
-    for ((inputFile, copiedFile) <- inputFiles.zip(copied))
-      if (inputFile != copiedFile)
-        os.copy.over(inputFile, copiedFile)
+    for (inputFile, copiedFile) <- inputFiles.zip(copied) do
+      if inputFile != copiedFile then os.copy.over(inputFile, copiedFile)
     copied.map(PathRef(_))
   }
 
+  protected def linkNpmInstall = Task.Anon {
+    for path <- os.list(npmInstall().path) do
+      os.remove(Task.dest / path.last)
+      os.symlink(Task.dest / path.last, path)
+  }
+
   protected def bundle: Task[BundleParams => Seq[PathRef]]
-}
+end ScalaJSBundleModule
+
 //noinspection ScalaWeakerAccess
-object ScalaJSBundleModule {
+object ScalaJSBundleModule:
+
   // noinspection ScalaUnusedSymbol
-  trait Test extends TestScalaJSModule { this: ScalaJSBundleModule =>
+  trait Test extends TestScalaJSModule:
+    this: ScalaJSBundleModule =>
+
     override def fastLinkJSTest = Task {
       val report = super.fastLinkJSTest()
 
-      os.copy.over(
-        npmInstall().path / "package.json",
-        Task.dest / "package.json"
-      )
-
-      if (!os.exists(Task.dest / "node_modules"))
-        os.symlink(
-          Task.dest / "node_modules",
-          npmInstall().path / "node_modules"
-        )
-
-      if (!os.exists(Task.dest / "package-lock.json"))
-        os.symlink(
-          Task.dest / "package-lock.json",
-          npmInstall().path / "package-lock.json"
-        )
+      linkNpmInstall()
 
       bundle.apply()(
         BundleParams(
@@ -65,5 +63,7 @@ object ScalaJSBundleModule {
           report.publicModules.toSeq.drop(1)
       Report(publicModules = modules, dest = PathRef(Task.dest))
     }
-  }
-}
+
+  end Test
+
+end ScalaJSBundleModule
