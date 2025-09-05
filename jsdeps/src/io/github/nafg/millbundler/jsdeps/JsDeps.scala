@@ -15,15 +15,19 @@ case class JsDeps(
     /** Javascript source files, as a map from path to contents
       */
     jsSources: Map[String, String] = Map.empty
-) {
+):
+
   def ++(that: JsDeps): JsDeps =
     JsDeps(
       dependencies ++ that.dependencies,
       devDependencies ++ that.devDependencies,
       jsSources ++ that.jsSources
     )
-}
-object JsDeps {
+
+end JsDeps
+
+object JsDeps:
+
   def apply(dependencies: (String, String)*): JsDeps =
     JsDeps(dependencies = dependencies.toMap)
 
@@ -36,17 +40,15 @@ object JsDeps {
       in: InputStream,
       buffer: Array[Byte] = new Array[Byte](8192),
       out: ByteArrayOutputStream = new ByteArrayOutputStream
-  ): String = {
+  ): String =
     val byteCount = in.read(buffer)
-    if (byteCount < 0)
-      out.toString
-    else {
+    if byteCount < 0 then out.toString
+    else
       out.write(buffer, 0, byteCount)
       readAllBytes(in, buffer, out)
-    }
-  }
+  end readAllBytes
 
-  def fromJar(jar: os.Path): Seq[JsDeps] = {
+  def fromJar(jar: os.Path): Seq[JsDeps] =
     val stream = new ZipInputStream(
       new BufferedInputStream(new FileInputStream(jar.toIO))
     )
@@ -80,5 +82,7 @@ object JsDeps {
         .toList
     finally
       stream.close()
-  }
-}
+    end try
+  end fromJar
+
+end JsDeps

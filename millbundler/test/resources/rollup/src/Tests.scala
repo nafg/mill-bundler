@@ -1,10 +1,11 @@
-import io.github.nafg.scalajs.facades.reactphonenumberinput._
-import munit.Assertions._
-import scala.scalajs.js
-import scala.scalajs.js.annotation._
+import io.github.nafg.scalajs.facades.reactphonenumberinput.*
+import munit.Assertions.*
 
-class Tests extends munit.FunSuite {
+import scala.scalajs.js
+import scala.scalajs.js.annotation.*
+
+class Tests extends munit.FunSuite:
+
   test("ReactPhoneNumberInput is defined (rollup)") {
     assert(!js.isUndefined(ReactPhoneNumberInput.raw))
   }
-}

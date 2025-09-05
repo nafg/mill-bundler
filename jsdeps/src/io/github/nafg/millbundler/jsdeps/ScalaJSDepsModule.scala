@@ -6,7 +6,7 @@ import mill.scalajslib.ScalaJSModule
 import os.Path
 
 //noinspection ScalaUnusedSymbol,ScalaWeakerAccess
-trait ScalaJSDepsModule extends ScalaJSModule {
+trait ScalaJSDepsModule extends ScalaJSModule:
 
   /** JS dependencies, explicitly defined for this module
     */
@@ -15,9 +15,10 @@ trait ScalaJSDepsModule extends ScalaJSModule {
   /** JS dependencies of moduleDeps, transitively.
     */
   def transitiveJsDeps = Task.sequence(
-    recursiveModuleDeps.collect { case mod: ScalaJSDepsModule =>
-      mod.allJsDeps
-    // case mod: ScalaJsModule => mod.recursiveModuleDeps
+    recursiveModuleDeps.collect {
+      case mod: ScalaJSDepsModule =>
+        mod.allJsDeps
+      // case mod: ScalaJsModule => mod.recursiveModuleDeps
     }
   )
 
@@ -35,4 +36,5 @@ trait ScalaJSDepsModule extends ScalaJSModule {
   final def allJsDeps: Task.Simple[JsDeps] = Task {
     JsDeps.combine(mvnJsDeps() ++ transitiveJsDeps() :+ jsDeps())
   }
-}
+
+end ScalaJSDepsModule

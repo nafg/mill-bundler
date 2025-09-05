@@ -1,8 +1,8 @@
 package io.github.nafg.millbundler
 
-case class BundleParams(inputFiles: Seq[os.Path], opt: Boolean)
+case class BundleParams(inputFiles: Iterable[os.Path], opt: Boolean)
 
-object BundleParams {
+object BundleParams:
+
   def apply(inputFile: os.Path, opt: Boolean): BundleParams =
     BundleParams(Seq(inputFile), opt)
-}

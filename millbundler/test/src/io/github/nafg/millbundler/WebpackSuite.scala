@@ -1,19 +1,24 @@
 package io.github.nafg.millbundler
 
 import io.github.nafg.millbundler.testcommon.BaseSuite
+
 import mill.api.Discover
 import mill.util.TokenReaders.*
 
-class WebpackSuite extends BaseSuite {
+class WebpackSuite extends BaseSuite:
+
   test("Webpack - simple") {
-    object build extends BaseBuild {
-      object test extends BaseTestModule with ScalaJSWebpackModule.Test {
+    object build extends BaseBuild:
+      object test extends BaseTestModule with ScalaJSWebpackModule.Test:
         lazy val millDiscover = Discover[this.type]
-      }
+
+        // override def webpackLibraryName = Some("WebpackTest")
+
+        // override def webpackChunkFormat = "commonjs"
 
       lazy val millDiscover = Discover[test.type]
-    }
 
     checkTestResults(build.test, "webpack-simple")
   }
-}
+
+end WebpackSuite
