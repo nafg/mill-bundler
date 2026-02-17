@@ -4,7 +4,7 @@
 
 import mill.*
 import mill.contrib.buildinfo.BuildInfo
-import mill.constants.BuildInfo.{millVersion, millBinPlatform}
+import mill.constants.BuildInfo.millVersion
 import mill.scalalib.*
 import mill.scalalib.publish.*
 import mill.scalalib.scalafmt.*
@@ -22,9 +22,7 @@ trait BasePublishModule
     extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule {
-
-  // Set the `platformSuffix` so the name indicates what Mill version it is compiled for
-  def platformSuffix = s"_mill$millBinPlatform"
+  override def scalaVersion = "3.7.2"
 
   override def publishVersion: T[String] =
     VcsVersion
