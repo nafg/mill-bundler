@@ -4,7 +4,7 @@
 
 import mill.*
 import mill.contrib.buildinfo.BuildInfo
-import mill.constants.BuildInfo.millVersion
+import mill.constants.BuildInfo.{millBinPlatform, millVersion}
 import mill.scalalib.*
 import mill.scalalib.publish.*
 import mill.scalalib.scalafmt.*
@@ -33,7 +33,7 @@ trait BasePublishModule
       )
 
   override def platformSuffix =
-    s"_mill${mill.constants.BuildInfo.millBinPlatform}"
+    s"_mill$millBinPlatform"
 
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
