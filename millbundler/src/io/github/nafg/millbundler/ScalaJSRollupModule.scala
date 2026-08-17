@@ -40,6 +40,7 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule {
 
   override protected def bundle = Task.Anon { (params: BundleParams) =>
     val copied = copyInputFile.apply()(params.inputFiles)
+    linkNodeModules()
 
     val rollupPath =
       npmInstall().path / "node_modules" / "rollup" / "dist" / "bin" / "rollup"

@@ -22,6 +22,29 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule {
     copied.map(PathRef(_))
   }
 
+  /** Make the npm install available in the current task's dest so that bundlers
+    * running there can resolve node modules.
+    */
+  protected def linkNodeModules = Task.Anon {
+    os.copy.over(
+      npmInstall().path / "package.json",
+      Task.dest / "package.json"
+    )
+
+    for (name <- Seq("node_modules", "package-lock.json")) {
+      val target = npmInstall().path / name
+      val link = Task.dest / name
+      if (!os.isLink(link))
+        try os.symlink(link, target)
+        catch {
+          // e.g. Windows without symlink privileges, or a leftover real
+          // file/dir from a previous fallback; fall back to copying
+          case _: java.io.IOException | _: UnsupportedOperationException =>
+            os.copy.over(target, link)
+        }
+    }
+  }
+
   protected def bundle: Task[BundleParams => Seq[PathRef]]
 }
 //noinspection ScalaWeakerAccess
@@ -30,23 +53,6 @@ object ScalaJSBundleModule {
   trait Test extends TestScalaJSModule { this: ScalaJSBundleModule =>
     override def fastLinkJSTest = Task {
       val report = super.fastLinkJSTest()
-
-      os.copy.over(
-        npmInstall().path / "package.json",
-        Task.dest / "package.json"
-      )
-
-      if (!os.exists(Task.dest / "node_modules"))
-        os.symlink(
-          Task.dest / "node_modules",
-          npmInstall().path / "node_modules"
-        )
-
-      if (!os.exists(Task.dest / "package-lock.json"))
-        os.symlink(
-          Task.dest / "package-lock.json",
-          npmInstall().path / "package-lock.json"
-        )
 
       bundle.apply()(
         BundleParams(
