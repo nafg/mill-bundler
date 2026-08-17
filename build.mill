@@ -32,6 +32,9 @@ trait BasePublishModule
         untaggedSuffix = "-SNAPSHOT"
       )
 
+  override def platformSuffix =
+    s"_mill${mill.constants.BuildInfo.millBinPlatform}"
+
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
     organization = "io.github.nafg.millbundler",
