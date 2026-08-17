@@ -1,9 +1,7 @@
 //| mvnDeps:
-//| - "com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION"
 //| - "com.lihaoyi::mill-contrib-versionfile:$MILL_VERSION"
 
 import mill.*
-import mill.contrib.buildinfo.BuildInfo
 import mill.constants.BuildInfo.{millBinPlatform, millVersion}
 import mill.scalalib.*
 import mill.scalalib.publish.*
