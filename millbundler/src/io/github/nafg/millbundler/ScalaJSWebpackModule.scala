@@ -88,7 +88,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule {
   }
 
   override protected def bundle = Task.Anon { (params: BundleParams) =>
-    val inputfilePathRef = copyInputFile.apply()(params.inputFiles)
+    copyInputFile.apply()(params.inputFiles)
     linkNodeModules()
 
     val configPath = Task.dest / webpackConfigFilename()
