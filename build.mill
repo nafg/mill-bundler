@@ -1,15 +1,10 @@
-//| mvnDeps:
-//| - "com.lihaoyi::mill-contrib-versionfile:$MILL_VERSION"
-
 import mill.*
 import mill.constants.BuildInfo.{millBinPlatform, millVersion}
 import mill.scalalib.*
 import mill.scalalib.publish.*
 import mill.scalalib.scalafmt.*
-import mill.contrib.versionfile.VersionFileModule
 import mill.util.VcsVersion
 
-object versionFile extends VersionFileModule
 
 trait BaseScalaModule extends ScalaModule {
   override def scalaVersion = "3.7.2"
