@@ -50,6 +50,7 @@ class RollupSuite extends BaseSuite:
     val config =
       evalTask(build.bundleTest, "multi-entry", build.bundleTest.runRollupConfig)
     assert(config.contains("\"dir\":"))
+    assert(config.contains("sourcemap: true"))
     assert(config.contains("entry-a.js"))
     assert(config.contains("entry-b.js"))
     assert(!config.contains("\"name\": \"RollupTest\""))
@@ -59,6 +60,9 @@ class RollupSuite extends BaseSuite:
     val outputs = bundles.map(_.path.last).toSet
     assert(outputs.contains("out-bundle-entry-a.js"))
     assert(outputs.contains("out-bundle-entry-b.js"))
+    assert(outputs.contains("out-bundle-entry-a.js.map"))
+    assert(outputs.contains("out-bundle-entry-b.js.map"))
+    assertExistingBundles(bundles)
   }
 
   test("Rollup - empty input fails") {
@@ -116,6 +120,7 @@ class RollupSuite extends BaseSuite:
     val bundles =
       evalTask(build.app, "rollup-split-app", build.app.runSplitBundle)
     assert(bundles.size >= 2)
+    assertExistingBundles(bundles)
   }
 
   test("Rollup - output name in config") {

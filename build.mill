@@ -7,14 +7,14 @@ import mill.util.VcsVersion
 
 
 trait BaseScalaModule extends ScalaModule:
-  override def scalaVersion = "3.8.4"
+  override def scalaVersion = "3.8.2"
   override def zincReportCachedProblems = true
 
 trait BasePublishModule
     extends BaseScalaModule
     with SonatypeCentralPublishModule
     with ScalafmtModule:
-  override def scalaVersion = "3.8.4"
+  override def scalaVersion = "3.8.2"
 
   override def publishVersion: T[String] =
     VcsVersion
@@ -29,13 +29,19 @@ trait BasePublishModule
 
   override def pomSettings = PomSettings(
     description = "Bundler for Mill",
-    organization = "io.github.nafg.millbundler",
-    url = "https://github.com/nafg/mill-bundler",
+    organization = "io.github.thijsbroersen.millbundler",
+    url = "https://github.com/ThijsBroersen/mill-bundler",
     licenses = Seq(License.`Apache-2.0`),
     versionControl =
-      VersionControl.github(owner = "nafg", repo = "mill-bundler"),
-    developers =
-      Seq(Developer("nafg", "Naftoli Gugenheim", "https://github.com/nafg"))
+      VersionControl.github(owner = "ThijsBroersen", repo = "mill-bundler"),
+    developers = Seq(
+      Developer(
+        "ThijsBroersen",
+        "Thijs Broersen",
+        "https://github.com/ThijsBroersen"
+      ),
+      Developer("nafg", "Naftoli Gugenheim", "https://github.com/nafg")
+    )
   )
 
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
@@ -51,7 +57,7 @@ object test_common extends BaseScalaModule:
 
   override def mvnDeps = Seq(
     mvn"com.lihaoyi::mill-testkit:$millVersion",
-    mvn"org.scalameta::munit::1.3.3"
+    mvn"org.scalameta::munit::1.3.6"
   )
 
 object jsdeps extends BasePublishModule:

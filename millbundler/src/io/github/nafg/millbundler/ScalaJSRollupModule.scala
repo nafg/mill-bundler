@@ -65,7 +65,9 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule:
       plugins.map(_.rollupCall(resolveOptions)).mkString(", ")
     val outputName =
       if inputFiles.size == 1 then
-        rollupOutputName().fold("")(name => s""""name": "$name",\n        """)
+        rollupOutputName().fold("")(name =>
+          s""""name": ${ujson.Str(name).render()},\n        """
+        )
       else ""
 
     s"""
@@ -75,6 +77,7 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule:
       input: $input,
       output: {
         format: "$outputFormat",
+        sourcemap: true,
         globals: {},
         $outputName$output
       },
@@ -104,10 +107,7 @@ trait ScalaJSRollupModule extends ScalaJSBundleModule:
           rollupPath.toString,
           "--config",
           configPath.toString
-        ) ++
-          Seq("--environment", "INCLUDE_DEPS,BUILD:production").filter(_ =>
-            params.opt
-          ),
+        ),
         cwd = Task.dest
       )
     catch

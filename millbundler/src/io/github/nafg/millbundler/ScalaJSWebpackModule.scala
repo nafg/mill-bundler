@@ -11,20 +11,17 @@ import os.Path
 //noinspection ScalaWeakerAccess
 trait ScalaJSWebpackModule extends ScalaJSBundleModule:
   // renovate: datasource=npm depName=webpack
-  def webpackVersion: Task.Simple[String] = "5.101.3"
+  def webpackVersion: Task.Simple[String] = "5.112.0"
   // renovate: datasource=npm depName=webpack-cli
   def webpackCliVersion: Task.Simple[String] = "6.0.1"
   // renovate: datasource=npm depName=webpack-dev-server
-  def webpackDevServerVersion: Task.Simple[String] = "5.2.2"
+  def webpackDevServerVersion: Task.Simple[String] = "5.2.6"
 
   def webpackLibraryName: Task.Simple[Option[String]]
 
   override def jsDeps: Task.Simple[JsDeps] =
     super.jsDeps() ++
       JsDeps(
-        dependencies = Map(
-          "crypto-browserify" -> "*"
-        ),
         devDependencies = Map(
           "webpack" -> webpackVersion(),
           "webpack-cli" -> webpackCliVersion(),
@@ -48,7 +45,12 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
             "filename" -> bundleFilename()
           )
       case inputFiles =>
-        ujson.Arr(inputFiles.map(_.toString).map(ujson.Str(_)).toSeq*) ->
+        ujson.Obj.from(
+          inputFiles.map { inputFile =>
+            val name = inputFile.last.stripSuffix(".js").stripSuffix(".map")
+            name -> ujson.Str(inputFile.toString)
+          }
+        ) ->
           ujson.Obj(
             "path" -> Task.dest.toString,
             "filename" -> outputEntryFileNames()
@@ -63,11 +65,8 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
       "output" -> outputCfg,
       "context" -> Task.dest.toString,
       "resolve" -> ujson.Obj(
-        "fallback" -> ujson.Obj(
-          "crypto" -> ujson.Bool(false)
-        ),
         "modules" -> ujson.Arr(
-          ujson.Str(npmInstall().path.toString + "/node_modules")
+          ujson.Str((npmInstall().path / "node_modules").toString)
         )
       )
     )
@@ -80,7 +79,7 @@ trait ScalaJSWebpackModule extends ScalaJSBundleModule:
       ";\n"
   }
 
-  def webpackConfigFilename = Task("webpack.config.js")
+  def webpackConfigFilename = Task("webpack.config.cjs")
 
   def webpackEnv: Task.Simple[Map[String, String]] = Task {
     val nodeMajorVersion = os
@@ -159,7 +158,7 @@ object ScalaJSWebpackModule:
     protected def entrypointScript(depNames: Iterable[String]) =
       val requiresMap =
         depNames
-          .map(name => s"'$name': require.resolve('$name')")
+          .map(name => s"'$name': require('$name')")
           .mkString(",\n      ")
       s"""
          |module.exports = {

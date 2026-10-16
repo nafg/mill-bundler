@@ -51,6 +51,12 @@ class BaseSuite extends munit.FunSuite:
           case Right(UnitTester.Result(value, _)) => value.asInstanceOf[A]
       }
 
+  protected def assertExistingBundles(bundles: Seq[PathRef]): Unit =
+    assert(bundles.nonEmpty, "expected bundle outputs")
+    bundles.foreach { ref =>
+      assert(os.exists(ref.path), s"missing bundle output ${ref.path}")
+    }
+
   protected def evalTaskExpectFailure(
       module: TestRootModule,
       resourceName: String,
@@ -60,10 +66,11 @@ class BaseSuite extends munit.FunSuite:
       evalTask(module, resourceName, task)
       throw new AssertionError(s"Expected $task to fail")
     catch
-      case e: Throwable => e
+      case e: AssertionError => throw e
+      case e: Throwable      => e
 
   abstract class BaseBuild extends TestRootModule with ScalaJSDepsModule:
-    override def scalaVersion = "3.8.4"
+    override def scalaVersion = "3.8.2"
     override def scalaJSVersion = "1.22.0"
 
     abstract class BaseTestModule
@@ -77,7 +84,7 @@ class BaseSuite extends munit.FunSuite:
 
       override def mvnDeps =
         super.mvnDeps() ++ Seq(
-          mvn"org.scalameta::munit::1.3.3",
+          mvn"org.scalameta::munit::1.3.6",
           mvn"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.19.0"
         )
 

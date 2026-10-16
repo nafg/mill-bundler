@@ -29,6 +29,7 @@ class WebpackSuite extends BaseSuite:
         override def moduleDeps = Seq(build)
         override def scalaVersion = build.scalaVersion
         override def scalaJSVersion = build.scalaJSVersion
+        override def outputEntryFileNames: T[String] = "bundle-[name].js"
 
         def runMultiBundle = Task {
           bundle.apply()(BundleParams(inputs, opt = false))
@@ -38,6 +39,19 @@ class WebpackSuite extends BaseSuite:
           webpackConfig()(BundleParams(inputs, opt = false))
         }
 
+        def runConfigFilename = Task {
+          webpackConfigFilename()
+        }
+
+        def runTrailingNameTemplate = Task {
+          expectedBundleFilename(
+            os.pwd / "entry-a.js",
+            multiEntry = true,
+            "unused.js",
+            "bundle-[name]"
+          )
+        }
+
         lazy val millDiscover = Discover[this.type]
 
       lazy val millDiscover = Discover[bundleTest.type]
@@ -45,15 +59,34 @@ class WebpackSuite extends BaseSuite:
 
     val config =
       evalTask(build.bundleTest, "multi-entry", build.bundleTest.runWebpackConfig)
-    assert(config.contains("[name]"))
+    assert(config.contains("\"entry-a\""))
+    assert(config.contains("\"entry-b\""))
     assert(config.contains("entry-a.js"))
     assert(config.contains("entry-b.js"))
+    assert(config.contains("bundle-[name].js"))
+    assert(
+      evalTask(
+        build.bundleTest,
+        "multi-entry",
+        build.bundleTest.runConfigFilename
+      ) == "webpack.config.cjs"
+    )
+    assert(
+      evalTask(
+        build.bundleTest,
+        "multi-entry",
+        build.bundleTest.runTrailingNameTemplate
+      ) == "bundle-entry-a"
+    )
 
     val bundles =
       evalTask(build.bundleTest, "multi-entry", build.bundleTest.runMultiBundle)
     val outputs = bundles.map(_.path.last).toSet
-    assert(outputs.contains("out-bundle-entry-a.js"))
-    assert(outputs.contains("out-bundle-entry-b.js"))
+    assert(outputs.contains("bundle-entry-a.js"))
+    assert(outputs.contains("bundle-entry-b.js"))
+    assert(outputs.contains("bundle-entry-a.js.map"))
+    assert(outputs.contains("bundle-entry-b.js.map"))
+    assertExistingBundles(bundles)
   }
 
   test("Webpack - empty input fails") {
@@ -111,6 +144,7 @@ class WebpackSuite extends BaseSuite:
     val bundles =
       evalTask(build.app, "webpack-split-app", build.app.runSplitBundle)
     assert(bundles.size >= 2)
+    assertExistingBundles(bundles)
   }
 
   test("Webpack - as library") {
@@ -124,16 +158,26 @@ class WebpackSuite extends BaseSuite:
           devBundle()
         }
 
+        def runEntrypoint = Task {
+          entrypointScript(Seq("left-pad"))
+        }
+
         lazy val millDiscover = Discover[this.type]
 
       lazy val millDiscover = Discover[frontend.type]
     end build
+
+    val script =
+      evalTask(build.frontend, "webpack-library", build.frontend.runEntrypoint)
+    assert(script.contains("require('left-pad')"))
+    assert(!script.contains("require.resolve"))
 
     val bundles =
       evalTask(build.frontend, "webpack-library", build.frontend.runDevBundle)
     val outputNames = bundles.map(_.path.last).toSet
     assert(outputNames.contains("out-bundle.js"))
     assert(bundles.exists(_.path.ext == "js"))
+    assertExistingBundles(bundles)
   }
 
 end WebpackSuite

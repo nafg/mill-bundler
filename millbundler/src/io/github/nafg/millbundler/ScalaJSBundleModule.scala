@@ -28,8 +28,10 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule:
       )
   }
 
-  protected def getReportMainFilePath(report: Report): Iterable[os.Path] =
-    report.publicModules.map(module => report.dest.path / module.jsFileName)
+  protected def getReportMainFilePath(report: Report): Seq[os.Path] =
+    report.publicModules
+      .map(module => report.dest.path / module.jsFileName)
+      .toSeq
 
   def bundleFilename: T[String] = "out-bundle.js"
   def outputEntryFileNames: T[String] = "out-bundle-[name].js"
@@ -41,7 +43,7 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule:
       entryFileNames: String
   ): String =
     if multiEntry then
-      val (head, tail) = entryFileNames.split("\\[name\\]") match
+      val (head, tail) = entryFileNames.split("\\[name\\]", -1) match
         case Array(head, tail) => (head, tail)
         case _                 =>
           throw new RuntimeException(
@@ -61,17 +63,19 @@ trait ScalaJSBundleModule extends ScalaJSNpmModule:
           PathRef(Task.dest / singleFilename),
           PathRef(Task.dest / (singleFilename + ".map"))
         )
-      case _ =>
-        inputFiles.map(inputFile =>
-          PathRef(
-            Task.dest / expectedBundleFilename(
-              inputFile,
-              multiEntry = true,
-              singleFilename,
-              entryFileNames
-            )
+      case inputFiles =>
+        inputFiles.flatMap { inputFile =>
+          val outName = expectedBundleFilename(
+            inputFile,
+            multiEntry = true,
+            singleFilename,
+            entryFileNames
           )
-        )
+          Seq(
+            PathRef(Task.dest / outName),
+            PathRef(Task.dest / (outName + ".map"))
+          )
+        }
     end match
   }
 
