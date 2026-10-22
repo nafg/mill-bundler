@@ -37,7 +37,7 @@ class BaseSuite extends munit.FunSuite {
       }
 
   abstract class BaseBuild extends TestRootModule with ScalaJSDepsModule {
-    override def scalaVersion = "3.7.2"
+    override def scalaVersion = "3.7.4"
     override def scalaJSVersion = "1.19.0"
 
     abstract class BaseTestModule
