@@ -47,7 +47,7 @@ class BaseSuite extends munit.FunSuite {
       override def moduleKind = ModuleKind.CommonJSModule
       override def mvnDeps =
         super.mvnDeps() ++ Seq(
-          mvn"org.scalameta::munit::1.1.1",
+          mvn"org.scalameta::munit::1.3.6",
           mvn"io.github.nafg.scalajs-facades::react-phone-number-input_3::0.16.0"
         )
     }
